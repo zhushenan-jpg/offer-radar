@@ -6,10 +6,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class GatewayConfig(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore", populate_by_name=True
+        env_file=".env", env_file_encoding="utf-8", extra="ignore",
+        populate_by_name=True, env_prefix="JOBPLOT_",
     )
 
-    model: str = "glm-5.3-flash"
+    model: str = "mimo-v2.5-pro"
     base_url: str = Field(
         default="https://open.bigmodel.cn/api/paas/v4/",
         validation_alias=AliasChoices("OPENAI_BASE_URL", "JOBPLOT_BASE_URL"),
