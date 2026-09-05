@@ -203,5 +203,76 @@ def eval_run(
     console.print(f"[green]评测报告:[/]{out}")
 
 
+@app.command()
+def watch(
+    profile: Path = typer.Option(Path("profile.yaml"), "--profile", exists=True),
+    db: Path = typer.Option(Path("jobpilot.db"), "--db"),
+    sources: Path = typer.Option(Path("sources.yaml"), "--sources", exists=True),
+    once: bool = typer.Option(False, "--once", help="立即执行一次每日增量后退出(调试用)"),
+):
+    """启动定时监控:周五 21:00 周全量 / 每日 07:30 增量+高分推送 / 08:00 预算巡检."""
+    import time
+
+    import yaml
+
+    from jobpilot.config import GatewayConfig
+    from jobpilot.llm_gateway.gateway import LLMGateway
+    from jobpilot.models.profile import load_profile
+    from jobpilot.scheduler.jobs import build_scheduler, daily_incremental
+    from jobpilot.storage.db import Storage
+
+    storage = Storage.open(db)
+    prof = load_profile(profile)
+    cfg = GatewayConfig()
+    srcs = yaml.safe_load(sources.read_text(encoding="utf-8"))
+    gw = LLMGateway(cfg, storage)
+
+    if once:
+        summary = daily_incremental(
+            storage,
+            prof,
+            srcs,
+            gw,
+            notify_url=cfg.notify_url,
+            threshold=cfg.alert_threshold,
+        )
+        console.print(summary)
+        return
+    sched = build_scheduler(storage, prof, srcs, gw, notify_url=cfg.notify_url)
+    sched.start()
+    console.print("[green]定时监控已启动:[/]")
+    console.print("  - 周五 21:00 周全量(错峰)")
+    console.print(f"  - 每日 07:30 增量 + 高分推送(阈值 {cfg.alert_threshold} 分)")
+    console.print("  - 每日 08:00 预算巡检")
+    console.print("[dim]Ctrl+C 退出[/]")
+    try:
+        while True:
+            time.sleep(60)
+    except KeyboardInterrupt:
+        sched.shutdown()
+        console.print("已退出")
+
+
+@app.command("parse-resume")
+def parse_resume(
+    file: Path = typer.Option(..., "--file", exists=True, help="PDF 简历"),
+    out: Path = typer.Option(
+        Path("profile.yaml"), "--out", exists=True, help="要更新的 profile.yaml"
+    ),
+):
+    """解析 PDF 简历写入 profile.yaml(文本型直接抽取,扫描件走视觉模型)."""
+    from jobpilot.config import GatewayConfig
+    from jobpilot.llm_gateway.gateway import LLMGateway
+    from jobpilot.resume_pdf import parse_resume as _parse
+    from jobpilot.resume_pdf import update_profile_yaml
+
+    cfg = GatewayConfig()
+    gw = LLMGateway(cfg)
+    md, channel = _parse(gw, file)
+    path = update_profile_yaml(out, md)
+    console.print(f"[green]简历已解析(通道:{channel})并写入[/]{path}")
+    console.print("[dim]提示:resume_version 已随内容变化,相关缓存自动失效[/]")
+
+
 def main() -> None:
     app()

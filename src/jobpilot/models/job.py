@@ -11,7 +11,7 @@ def _norm(text: str) -> str:
 
 class JobPosting(BaseModel):
     id: str = Field(min_length=16, max_length=16)
-    source: Literal["greenhouse", "lever", "manual"]
+    source: Literal["greenhouse", "lever", "manual", "browser"]
     company: str
     title: str
     location: str = ""

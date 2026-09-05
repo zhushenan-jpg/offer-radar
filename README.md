@@ -34,6 +34,12 @@ copy .env.example .env   # 填入 API key
 
 # 求职雷达面板
 .venv/Scripts/streamlit run src/jobpilot/app/dashboard.py
+
+# 定时监控:每日 07:30 增量+高分推送 / 周五 21:00 周全量(错峰) / 08:00 预算巡检
+.venv/Scripts/jobpilot watch                # 或 --once 立即跑一次增量
+
+# PDF 简历解析(文本型零成本抽取,扫描件走视觉模型)
+.venv/Scripts/jobpilot parse-resume --file 我的简历.pdf
 ```
 
 ## 部署(Streamlit Community Cloud)
@@ -49,7 +55,7 @@ copy .env.example .env   # 填入 API key
 - [x] M1:包骨架、数据模型、SQLite 存储、LLM 网关(缓存/计量/预算)、Rubric v1 评分、CLI
 - [x] M2:ATS 采集器(Greenhouse/Lever)+ JD 清洗 + 去重 + crewAI 编排 + Markdown 周报(`jobpilot report`)
 - [x] M3:评测台(Spearman/MAE/Top-k/校准)+ 成本统计 + Streamlit 面板 + 部署物
-- [ ] M4:browser-use 兜底采集 + 定时监控推送
+- [x] M4:定时监控(`jobpilot watch`,错峰跑批 + 高分推送 + 预算巡检)+ PDF 简历解析(`parse-resume`)+ browser-use 兜底采集器(可选依赖)
 
 ## 周报示例
 

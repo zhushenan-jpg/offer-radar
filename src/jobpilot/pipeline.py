@@ -37,7 +37,9 @@ def load_sources(path: Path | str) -> list[SourceCfg]:
     return [SourceCfg.model_validate(item) for item in data]
 
 
-async def collect_all(storage, sources: list[SourceCfg], *, client=None) -> dict[str, int]:
+async def collect_all(
+    storage, sources: list[SourceCfg], *, client=None, cfg=None
+) -> dict[str, int]:
     """并发采集全部来源;失败源记 -1 跳过;返回 {来源: 新职位数}."""
     own_client = client is None
     client = client or httpx.AsyncClient(timeout=30, headers={"User-Agent": USER_AGENT})
@@ -47,7 +49,7 @@ async def collect_all(storage, sources: list[SourceCfg], *, client=None) -> dict
     async def _one(src: SourceCfg) -> None:
         async with sem:
             try:
-                jobs = await get_collector(src.source, client).fetch(src.slug, src.name)
+                jobs = await get_collector(src.source, client, cfg=cfg).fetch(src.slug, src.name)
             except CollectorError as e:
                 print(f"[采集跳过] {src.name}({src.slug}): {e}")
                 summary[src.label()] = -1
@@ -118,7 +120,7 @@ async def run_report(
         except ImportError:
             use_crew = False  # crewai 未安装时自动降级,保证流水线可用
     if not use_crew:
-        await collect_all(storage, sources)
+        await collect_all(storage, sources, cfg=gateway.cfg)
         clean_pending(storage)
         score_pending(storage, profile, gateway, limit=limit)
 

@@ -15,6 +15,8 @@ def main() -> None:
     if not SRC.exists():
         raise SystemExit("找不到 jobpilot.db:先跑一次 jobpilot report")
     DST_DIR.mkdir(exist_ok=True)
+    if DST.exists():
+        DST.unlink()  # VACUUM INTO 要求目标文件不存在
     src = sqlite3.connect(SRC)
     src.execute("VACUUM INTO ?", (str(DST),))  # 干净的单文件副本(含 WAL 合并)
     src.close()

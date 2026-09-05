@@ -183,11 +183,23 @@ class LLMGateway:
             f"{self.cfg.max_retries} 次重试后仍无法产出合法 {schema.__name__}", last_err
         )
 
-    def text(self, prompt: str, *, system: str = "", module: str = "") -> str:
+    def text(
+        self, prompt: str, *, system: str = "", module: str = "", images: list[str] | None = None
+    ) -> str:
+        """纯文本输出;images 为 base64 data URL 列表(视觉输入,PDF 简历解析用)."""
         self._budget_check()
+        user_content: str | list[dict] = prompt
+        if images:
+            user_content = [{"type": "text", "text": prompt}] + [
+                {"type": "image_url", "image_url": {"url": img}} for img in images
+            ]
+        msgs = []
+        if system:
+            msgs.append({"role": "system", "content": system})
+        msgs.append({"role": "user", "content": user_content})
         completion = self._client.chat.completions.create(
             model=self.cfg.model,
-            messages=self._messages(prompt, system),
+            messages=msgs,
             temperature=self.cfg.temperature,
             top_p=self.cfg.top_p,
         )

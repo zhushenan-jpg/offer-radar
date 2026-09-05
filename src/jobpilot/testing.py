@@ -22,6 +22,6 @@ class FakeGateway:
             )
         raise NotImplementedError(f"FakeGateway 不支持 {schema.__name__}")
 
-    def text(self, prompt, *, system="", module=""):
-        self.calls.append({"schema": None, "prompt": prompt, "module": module})
+    def text(self, prompt, *, system="", module="", images=None):
+        self.calls.append({"schema": None, "prompt": prompt, "module": module, "images": images})
         return "离线假文本"

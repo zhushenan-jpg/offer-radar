@@ -33,3 +33,7 @@ class GatewayConfig(BaseSettings):
     price_output_cny_per_mtok: float = Field(
         default=21.0, validation_alias=AliasChoices("JOBPLOT_PRICE_OUTPUT_CNY_PER_MTOK")
     )
+    # 监控推送(M4):apprise 渠道 URL(如 mailto://、json://),留空则不推送
+    notify_url: str = ""
+    # 高分职位即时推送阈值(0-100)
+    alert_threshold: int = 75
