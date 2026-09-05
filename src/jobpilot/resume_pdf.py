@@ -9,6 +9,8 @@ import base64
 import io
 from pathlib import Path
 
+from jobpilot.llm_gateway.exceptions import GatewayError
+
 MIN_TEXT_LENGTH = 120  # 少于该字符数视为扫描件,走视觉兜底
 
 RESUME_PARSE_PROMPT = (
@@ -49,7 +51,15 @@ def parse_resume(gateway, path: Path | str) -> tuple[str, str]:
     if len(text) >= MIN_TEXT_LENGTH:
         return text, "text"
     images = render_page_images(path)
-    md = gateway.text(RESUME_PARSE_PROMPT, images=images, module="resume")
+    try:
+        md = gateway.text(RESUME_PARSE_PROMPT, images=images, module="resume")
+    except Exception as e:
+        if "404" in str(e) or "image" in str(e).lower():
+            raise GatewayError(
+                f"当前端点/模型不支持图片输入,无法解析扫描件 PDF。"
+                f"可改用文本型 PDF,或更换支持视觉的模型(JOBPLOT_MODEL)。原始错误:{e}"
+            ) from e
+        raise
     return md, "vision"
 
 

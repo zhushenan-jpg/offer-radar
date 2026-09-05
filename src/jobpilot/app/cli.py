@@ -10,6 +10,30 @@ app = typer.Typer(no_args_is_help=True, help="OfferRadar — 多 Agent 求职调
 console = Console()
 
 
+def _real_gateway(cfg, storage=None):
+    """创建真实网关;未配置 key 时友好退出而不是甩堆栈."""
+    from jobpilot.llm_gateway.exceptions import GatewayError
+    from jobpilot.llm_gateway.gateway import LLMGateway
+
+    try:
+        return LLMGateway(cfg, storage)
+    except GatewayError as e:
+        console.print(f"[red]{e}[/]")
+        raise typer.Exit(1)
+
+
+def _require_profile(path: Path) -> Path:
+    """profile.yaml 缺失时给出可执行的修复指引."""
+    if path.exists():
+        return path
+    console.print(
+        f"[red]找不到 {path}。[/]执行以下命令从模板创建:\n"
+        f"  copy profile.example.yaml {path}\n"
+        "[dim](模板里是演示简历,请替换为你自己的真实简历)[/]"
+    )
+    raise typer.Exit(1)
+
+
 @app.callback()
 def _root() -> None:
     """强制子命令模式,保证 `jobpilot <command>` 用法随命令增多保持稳定."""
@@ -18,7 +42,7 @@ def _root() -> None:
 @app.command()
 def score(
     file: Path = typer.Option(..., "--file", exists=True, help="JD markdown 文件"),
-    profile: Path = typer.Option(Path("profile.yaml"), "--profile", exists=True),
+    profile: Path = typer.Option(Path("profile.yaml"), "--profile"),
     db: Path = typer.Option(Path("jobpilot.db"), "--db", help="SQLite 路径"),
     fake: bool = typer.Option(False, "--fake", help="离线演示:内置假 LLM,不调用真实 API"),
 ):
@@ -29,7 +53,7 @@ def score(
     from jobpilot.models.profile import load_profile
     from jobpilot.storage.db import Storage
 
-    prof = load_profile(profile)
+    prof = load_profile(_require_profile(profile))
     jd_md = file.read_text(encoding="utf-8")
     job = JobPosting(
         id=JobPosting.compute_id("manual", "manual", file.stem, ""),
@@ -47,9 +71,7 @@ def score(
 
         gw = FakeGateway(cfg, storage)
     else:
-        from jobpilot.llm_gateway.gateway import LLMGateway
-
-        gw = LLMGateway(cfg, storage)
+        gw = _real_gateway(cfg, storage)
 
     result = score_and_store(gw, storage, prof, jd_md, job_id=job.id)
 
@@ -70,7 +92,7 @@ def score(
 
 @app.command()
 def report(
-    profile: Path = typer.Option(Path("profile.yaml"), "--profile", exists=True),
+    profile: Path = typer.Option(Path("profile.yaml"), "--profile"),
     db: Path = typer.Option(Path("jobpilot.db"), "--db", help="SQLite 路径"),
     sources: Path = typer.Option(Path("sources.yaml"), "--sources", exists=True),
     out_dir: Path = typer.Option(Path("docs/reports"), "--out-dir", help="周报输出目录"),
@@ -90,7 +112,7 @@ def report(
 
     srcs = yaml.safe_load(sources.read_text(encoding="utf-8"))
     storage = Storage.open(db)
-    prof = load_profile(profile)
+    prof = load_profile(_require_profile(profile))
     cfg = GatewayConfig()
     if fake:
         # 假评分必须记在 fake-model 名下,避免污染真模型的成本/评测数据
@@ -99,9 +121,7 @@ def report(
 
         gw, use_crew = FakeGateway(cfg, storage), False
     else:
-        from jobpilot.llm_gateway.gateway import LLMGateway
-
-        gw, use_crew = LLMGateway(cfg, storage), not no_crew
+        gw, use_crew = _real_gateway(cfg, storage), not no_crew
 
     path = asyncio.run(
         run_report(
@@ -177,9 +197,7 @@ def eval_run(
 
         gw = FakeGateway(cfg, storage)
     else:
-        from jobpilot.llm_gateway.gateway import LLMGateway
-
-        gw = LLMGateway(cfg, storage)
+        gw = _real_gateway(cfg, storage)
     try:
         metrics = run_eval(
             storage,
@@ -205,10 +223,11 @@ def eval_run(
 
 @app.command()
 def watch(
-    profile: Path = typer.Option(Path("profile.yaml"), "--profile", exists=True),
+    profile: Path = typer.Option(Path("profile.yaml"), "--profile"),
     db: Path = typer.Option(Path("jobpilot.db"), "--db"),
     sources: Path = typer.Option(Path("sources.yaml"), "--sources", exists=True),
     once: bool = typer.Option(False, "--once", help="立即执行一次每日增量后退出(调试用)"),
+    limit: int = typer.Option(None, "--limit", help="--once 模式下最多评分 N 条(安全阀)"),
 ):
     """启动定时监控:周五 21:00 周全量 / 每日 07:30 增量+高分推送 / 08:00 预算巡检."""
     import time
@@ -216,16 +235,15 @@ def watch(
     import yaml
 
     from jobpilot.config import GatewayConfig
-    from jobpilot.llm_gateway.gateway import LLMGateway
     from jobpilot.models.profile import load_profile
     from jobpilot.scheduler.jobs import build_scheduler, daily_incremental
     from jobpilot.storage.db import Storage
 
     storage = Storage.open(db)
-    prof = load_profile(profile)
+    prof = load_profile(_require_profile(profile))
     cfg = GatewayConfig()
     srcs = yaml.safe_load(sources.read_text(encoding="utf-8"))
-    gw = LLMGateway(cfg, storage)
+    gw = _real_gateway(cfg, storage)
 
     if once:
         summary = daily_incremental(
@@ -235,6 +253,7 @@ def watch(
             gw,
             notify_url=cfg.notify_url,
             threshold=cfg.alert_threshold,
+            limit=limit,
         )
         console.print(summary)
         return
@@ -256,19 +275,22 @@ def watch(
 @app.command("parse-resume")
 def parse_resume(
     file: Path = typer.Option(..., "--file", exists=True, help="PDF 简历"),
-    out: Path = typer.Option(
-        Path("profile.yaml"), "--out", exists=True, help="要更新的 profile.yaml"
-    ),
+    out: Path = typer.Option(Path("profile.yaml"), "--out", help="要更新的 profile.yaml"),
 ):
     """解析 PDF 简历写入 profile.yaml(文本型直接抽取,扫描件走视觉模型)."""
     from jobpilot.config import GatewayConfig
-    from jobpilot.llm_gateway.gateway import LLMGateway
+    from jobpilot.llm_gateway.exceptions import GatewayError
     from jobpilot.resume_pdf import parse_resume as _parse
     from jobpilot.resume_pdf import update_profile_yaml
 
+    out = _require_profile(out)
     cfg = GatewayConfig()
-    gw = LLMGateway(cfg)
-    md, channel = _parse(gw, file)
+    gw = _real_gateway(cfg)
+    try:
+        md, channel = _parse(gw, file)
+    except GatewayError as e:
+        console.print(f"[red]{e}[/]")
+        raise typer.Exit(1)
     path = update_profile_yaml(out, md)
     console.print(f"[green]简历已解析(通道:{channel})并写入[/]{path}")
     console.print("[dim]提示:resume_version 已随内容变化,相关缓存自动失效[/]")

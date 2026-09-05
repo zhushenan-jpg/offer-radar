@@ -38,9 +38,13 @@ def load_sources(path: Path | str) -> list[SourceCfg]:
 
 
 async def collect_all(
-    storage, sources: list[SourceCfg], *, client=None, cfg=None
+    storage, sources: list[SourceCfg | dict], *, client=None, cfg=None
 ) -> dict[str, int]:
-    """并发采集全部来源;失败源记 -1 跳过;返回 {来源: 新职位数}."""
+    """并发采集全部来源;失败源记 -1 跳过;返回 {来源: 新职位数}.
+
+    sources 兼容 dict 与 SourceCfg(调度器传入的是 yaml 原始 dict).
+    """
+    sources = [s if isinstance(s, SourceCfg) else SourceCfg.model_validate(s) for s in sources]
     own_client = client is None
     client = client or httpx.AsyncClient(timeout=30, headers={"User-Agent": USER_AGENT})
     sem = asyncio.Semaphore(CONCURRENCY)

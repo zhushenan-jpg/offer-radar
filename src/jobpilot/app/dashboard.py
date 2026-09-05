@@ -68,26 +68,31 @@ with tab_jobs:
             view = view[view["company"] == company]
         if keyword:
             view = view[view["title"].str.contains(keyword, case=False, na=False)]
-        st.dataframe(
-            view[["overall", "company", "title", "location", "confidence"]].head(50),
-            hide_index=True,
-            use_container_width=True,
-        )
-        choice = st.selectbox(
-            "查看证据详情",
-            view.head(50).apply(lambda r: f"{r['company']} — {r['title']}({r['overall']})", axis=1),
-        )
-        if choice and not view.empty:
-            picked = view[
-                view.apply(lambda r: f"{r['company']} — {r['title']}({r['overall']})", axis=1)
-                == choice
-            ].iloc[0]
-            st.write(f"**{picked['summary']}**(置信度 {picked['confidence']:.2f})")
-            for dim, d in picked["dims"].items():
-                quotes = "; ".join(f"「{e['quote']}」" for e in d["evidence"])
-                st.markdown(f"- **{dim}**:{d['score']}/10 — {quotes}")
-            if picked.get("url"):
-                st.markdown(f"[职位原文]({picked['url']})")
+        if view.empty:
+            st.info("没有匹配的职位:调整公司或关键词筛选")
+        else:
+            st.dataframe(
+                view[["overall", "company", "title", "location", "confidence"]].head(50),
+                hide_index=True,
+                use_container_width=True,
+            )
+            choice = st.selectbox(
+                "查看证据详情",
+                view.head(50).apply(
+                    lambda r: f"{r['company']} — {r['title']}({r['overall']})", axis=1
+                ),
+            )
+            if choice:
+                picked = view[
+                    view.apply(lambda r: f"{r['company']} — {r['title']}({r['overall']})", axis=1)
+                    == choice
+                ].iloc[0]
+                st.write(f"**{picked['summary']}**(置信度 {picked['confidence']:.2f})")
+                for dim, d in picked["dims"].items():
+                    quotes = "; ".join(f"「{e['quote']}」" for e in d["evidence"])
+                    st.markdown(f"- **{dim}**:{d['score']}/10 — {quotes}")
+                if picked.get("url"):
+                    st.markdown(f"[职位原文]({picked['url']})")
 
 with tab_review:
     review = [r for r in rows if r["review_status"] == "review"]

@@ -13,7 +13,7 @@ import instructor
 from openai import OpenAI
 from pydantic import BaseModel, ValidationError
 
-from .exceptions import BudgetExceeded, GatewaySchemaError
+from .exceptions import BudgetExceeded, GatewayError, GatewaySchemaError
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -45,6 +45,8 @@ def extract_json(text: str) -> str:
 
 class LLMGateway:
     def __init__(self, cfg, storage=None, client: OpenAI | None = None):
+        if not cfg.api_key.get_secret_value():
+            raise GatewayError("API key 未配置:复制 .env.example 为 .env,填入 ZHIPU_API_KEY 后重试")
         self.cfg = cfg
         self.storage = storage
         self._client = client or OpenAI(

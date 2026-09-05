@@ -82,7 +82,7 @@ class TestDailyIncremental:
 
         monkeypatch.setattr("jobpilot.scheduler.jobs.collect_all", fake_collect)
         monkeypatch.setattr("jobpilot.scheduler.jobs.clean_pending", lambda s: 1)
-        monkeypatch.setattr("jobpilot.scheduler.jobs.score_pending", lambda s, p, g: 1)
+        monkeypatch.setattr("jobpilot.scheduler.jobs.score_pending", lambda s, p, g, limit=None: 1)
         cfg = GatewayConfig(api_key="k", base_url="x")
         summary = daily_incremental(
             storage,

@@ -13,8 +13,9 @@
 
 ```bash
 py -3.12 -m venv .venv
-.venv/Scripts/pip install -e ".[dev]"
-copy .env.example .env   # 填入 API key
+.venv/Scripts/pip install -e ".[dev,m2,m3]"
+copy .env.example .env           # 填入 API key
+copy profile.example.yaml profile.yaml  # 换成你的真实简历
 
 # 离线演示(内置假 LLM,不花 API 钱)
 .venv/Scripts/jobpilot score --file examples/jobs/jd_backend_intern.md --profile profile.example.yaml --fake

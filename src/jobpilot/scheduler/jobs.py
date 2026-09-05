@@ -32,12 +32,19 @@ def high_score_alerts(storage, threshold: int = 75) -> list[dict]:
 
 
 def daily_incremental(
-    storage, profile, sources, gateway, *, notify_url: str = "", threshold: int = 75
+    storage,
+    profile,
+    sources,
+    gateway,
+    *,
+    notify_url: str = "",
+    threshold: int = 75,
+    limit: int | None = None,
 ) -> dict:
     """每日增量:采集 → 清洗 → 评新职位 → 高分推送."""
     crawl = asyncio.run(collect_all(storage, sources))
     cleaned = clean_pending(storage)
-    scored = score_pending(storage, profile, gateway)
+    scored = score_pending(storage, profile, gateway, limit=limit)
     alerts = high_score_alerts(storage, threshold)
     if alerts:
         send_notification(compose_alert_message(alerts, threshold=threshold), notify_url=notify_url)
