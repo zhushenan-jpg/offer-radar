@@ -85,10 +85,10 @@ class JobRepo:
         ]
 
     def scored_with_scores(self) -> list[dict]:
-        """全部已评分职位的最新评分,按 overall 降序;周报数据源."""
+        """全部已评分职位的最新评分,按 overall 降序;周报与面板数据源."""
         rows = self.conn.execute(
-            """SELECT j.company, j.title, j.url, j.location, s.overall, s.dims_json,
-                 s.confidence, s.summary, s.review_status, s.rubric_version
+            """SELECT j.id AS job_id, j.company, j.title, j.url, j.location, s.overall,
+                 s.dims_json, s.confidence, s.summary, s.review_status, s.rubric_version
                FROM jobs j JOIN scores s ON s.job_id = j.id
                WHERE s.id = (SELECT MAX(id) FROM scores WHERE job_id = j.id)
                ORDER BY s.overall DESC"""
@@ -142,6 +142,66 @@ class ScoreRepo:
             "SELECT * FROM scores WHERE job_id=? ORDER BY id DESC LIMIT 1", (job_id,)
         ).fetchone()
         return row
+
+
+class AnnotationRepo:
+    def __init__(self, conn):
+        self.conn = conn
+
+    def add(self, job_id: str, human_overall: float, annotator: str) -> None:
+        self.conn.execute(
+            "INSERT INTO annotations(job_id, human_overall, annotator, created_at) VALUES(?,?,?,?)",
+            (job_id, human_overall, annotator, _now()),
+        )
+        self.conn.commit()
+
+    def pairs_with_predictions(self, annotator: str | None = None) -> list[dict]:
+        """评测集内:每人每职位最新标注 × 该职位最新模型分."""
+        sql = """
+            SELECT a.job_id AS job_id, a.human_overall AS human, a.annotator AS annotator,
+                   j.company AS company, j.title AS title, s.overall AS pred
+            FROM annotations a
+            JOIN jobs j ON j.id = a.job_id
+            JOIN scores s ON s.job_id = a.job_id
+              AND s.id = (SELECT MAX(id) FROM scores WHERE job_id = a.job_id)
+            WHERE a.id = (
+                SELECT MAX(id) FROM annotations
+                WHERE job_id = a.job_id AND annotator = a.annotator)
+        """
+        params: list = []
+        if annotator:
+            sql += " AND a.annotator = ?"
+            params.append(annotator)
+        return [dict(r) for r in self.conn.execute(sql, params).fetchall()]
+
+    def pending_for_eval(self, annotator: str | None = None) -> list[dict]:
+        sql = """
+            SELECT e.job_id AS job_id, j.company AS company, j.title AS title
+            FROM eval_dataset e
+            JOIN jobs j ON j.id = e.job_id
+            WHERE NOT EXISTS (
+                SELECT 1 FROM annotations a
+                WHERE a.job_id = e.job_id{extra})
+        """.format(extra=" AND a.annotator = ?" if annotator else "")
+        params = [annotator] if annotator else []
+        return [dict(r) for r in self.conn.execute(sql, params).fetchall()]
+
+
+class EvalRepo:
+    def __init__(self, conn):
+        self.conn = conn
+
+    def add(self, job_id: str) -> None:
+        self.conn.execute(
+            "INSERT INTO eval_dataset(job_id, added_at) VALUES(?,?) ON CONFLICT(job_id) DO NOTHING",
+            (job_id, _now()),
+        )
+        self.conn.commit()
+
+    def all_ids(self) -> list[str]:
+        return [
+            r[0] for r in self.conn.execute("SELECT job_id FROM eval_dataset ORDER BY added_at")
+        ]
 
 
 class UsageRepo:

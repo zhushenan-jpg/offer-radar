@@ -11,3 +11,6 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+
+# 演示库需要随仓库提交(面板公开部署的数据源)
+!deploy/demo_jobpilot.db

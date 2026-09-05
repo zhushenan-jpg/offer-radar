@@ -118,5 +118,90 @@ def report(
     console.print(f"[green]周报已生成:[/]{path}")
 
 
+@app.command("eval-seed")
+def eval_seed(
+    n: int = typer.Option(40, "--n", help="抽样职位数(按公司均衡)"),
+    db: Path = typer.Option(Path("jobpilot.db"), "--db"),
+):
+    """从已采集职位中抽样建立评测集."""
+    from jobpilot.eval.dataset import seed_dataset
+    from jobpilot.storage.db import Storage
+
+    picked = seed_dataset(Storage.open(db), n)
+    table = Table(title=f"评测集抽样:{len(picked)} 条")
+    table.add_column("公司")
+    table.add_column("职位")
+    table.add_column("job_id")
+    for p in picked:
+        table.add_row(p["company"], p["title"][:44], p["job_id"])
+    console.print(table)
+    console.print(
+        "[dim]下一步:jobpilot eval-annotate --job-id <id> --score <0-100> 逐条人工打分[/]"
+    )
+
+
+@app.command("eval-annotate")
+def eval_annotate(
+    job_id: str = typer.Option(..., "--job-id"),
+    score: float = typer.Option(..., "--score", min=0, max=100, help="人工综合分 0-100"),
+    annotator: str = typer.Option("human", "--annotator"),
+    db: Path = typer.Option(Path("jobpilot.db"), "--db"),
+):
+    """记录一条人工标注(可与模型分对照算一致性)."""
+    from jobpilot.eval.dataset import record_annotation
+    from jobpilot.storage.db import Storage
+
+    record_annotation(Storage.open(db), job_id, score, annotator)
+    console.print(f"[green]已记录[/] {job_id} = {score}({annotator})")
+
+
+@app.command("eval-run")
+def eval_run(
+    db: Path = typer.Option(Path("jobpilot.db"), "--db"),
+    annotator: str = typer.Option(None, "--annotator", help="只统计该标注人"),
+    out: Path = typer.Option(Path("docs/eval-report.md"), "--out"),
+    top_k: int = typer.Option(3, "--top-k"),
+    fake: bool = typer.Option(False, "--fake"),
+):
+    """补齐当前 rubric 评分 → 计算一致性指标 → 生成评测报告."""
+    from jobpilot.config import GatewayConfig
+    from jobpilot.eval.run import EvalError, run_eval
+    from jobpilot.models.profile import load_profile
+    from jobpilot.storage.db import Storage
+
+    storage = Storage.open(db)
+    cfg = GatewayConfig()
+    if fake:
+        cfg = cfg.model_copy(update={"model": "fake-model"})
+        from jobpilot.testing import FakeGateway
+
+        gw = FakeGateway(cfg, storage)
+    else:
+        from jobpilot.llm_gateway.gateway import LLMGateway
+
+        gw = LLMGateway(cfg, storage)
+    try:
+        metrics = run_eval(
+            storage,
+            gw,
+            load_profile(
+                Path("profile.example.yaml")
+                if not Path("profile.yaml").exists()
+                else "profile.yaml"
+            ),
+            annotator=annotator,
+            out_path=out,
+            top_k=top_k,
+        )
+    except EvalError as e:
+        console.print(f"[red]{e}[/]")
+        raise typer.Exit(1)
+    console.print(
+        f"[bold]n={metrics['n']} | Spearman={metrics['spearman']} | MAE={metrics['mae']}"
+        f" | Top-{top_k} 重合={metrics['topk_overlap']}[/]"
+    )
+    console.print(f"[green]评测报告:[/]{out}")
+
+
 def main() -> None:
     app()

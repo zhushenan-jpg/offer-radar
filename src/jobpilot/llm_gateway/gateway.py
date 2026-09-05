@@ -5,6 +5,7 @@
 """
 
 import hashlib
+import json
 import re
 from typing import TypeVar
 
@@ -30,6 +31,12 @@ def extract_json(text: str) -> str:
     m = _FENCE_RE.search(text)
     if m:
         text = m.group(1).strip()
+    # 双重编码兼容:部分模型会把 JSON 对象整体包成一个 JSON 字符串返回
+    if text.startswith('"'):
+        try:
+            text = json.loads(text)
+        except json.JSONDecodeError:
+            pass
     start, end = text.find("{"), text.rfind("}")
     if start != -1 and end > start:
         text = text[start : end + 1]

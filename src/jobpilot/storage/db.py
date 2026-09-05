@@ -3,7 +3,7 @@
 import sqlite3
 from pathlib import Path
 
-from .repo import CacheRepo, JobRepo, ScoreRepo, UsageRepo
+from .repo import AnnotationRepo, CacheRepo, EvalRepo, JobRepo, ScoreRepo, UsageRepo
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS companies(
@@ -33,6 +33,8 @@ CREATE INDEX IF NOT EXISTS idx_usage_ts ON usage(ts);
 CREATE TABLE IF NOT EXISTS annotations(
   id INTEGER PRIMARY KEY AUTOINCREMENT, job_id TEXT,
   human_overall REAL, dims_json TEXT, annotator TEXT, created_at TEXT);
+CREATE TABLE IF NOT EXISTS eval_dataset(
+  job_id TEXT PRIMARY KEY, added_at TEXT);
 CREATE TABLE IF NOT EXISTS reports(
   id INTEGER PRIMARY KEY AUTOINCREMENT, period TEXT,
   path TEXT, cost_cny REAL, created_at TEXT);
@@ -46,6 +48,8 @@ class Storage:
         self.scores = ScoreRepo(conn)
         self.usage = UsageRepo(conn)
         self.cache = CacheRepo(conn)
+        self.annotations = AnnotationRepo(conn)
+        self.eval_ds = EvalRepo(conn)
 
     @classmethod
     def open(cls, path: Path | str) -> "Storage":
