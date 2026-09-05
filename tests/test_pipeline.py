@@ -89,7 +89,12 @@ async def test_crawl_is_incremental(tmp_path, profile):
     )
     sources = [{"source": "greenhouse", "slug": "stripe", "name": "Stripe"}]
     gw = FakeGateway(GatewayConfig(api_key="fake", base_url="fake://x"), storage)
-    kw = {"gateway": gw, "use_crew": False, "out_dir": tmp_path / "reports", "db_path": tmp_path / "p.db"}
+    kw = {
+        "gateway": gw,
+        "use_crew": False,
+        "out_dir": tmp_path / "reports",
+        "db_path": tmp_path / "p.db",
+    }
     await run_report(storage, profile, sources, **kw)
     first_scores = storage.conn.execute("SELECT COUNT(*) FROM scores").fetchone()[0]
     await run_report(storage, profile, sources, **kw)

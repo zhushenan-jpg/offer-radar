@@ -6,8 +6,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class GatewayConfig(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore",
-        populate_by_name=True, env_prefix="JOBPLOT_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        populate_by_name=True,
+        env_prefix="JOBPLOT_",
     )
 
     model: str = "mimo-v2.5-pro"

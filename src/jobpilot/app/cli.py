@@ -105,8 +105,14 @@ def report(
 
     path = asyncio.run(
         run_report(
-            storage, prof, srcs,
-            gateway=gw, use_crew=use_crew, out_dir=out_dir, db_path=db, limit=limit,
+            storage,
+            prof,
+            srcs,
+            gateway=gw,
+            use_crew=use_crew,
+            out_dir=out_dir,
+            db_path=db,
+            limit=limit,
         )
     )
     console.print(f"[green]周报已生成:[/]{path}")

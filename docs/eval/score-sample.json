@@ -1,102 +1,108 @@
 {
-  "model": "fake-model",
+  "model": "mimo-v2.5-pro",
   "n": 6,
   "elapsed_s": 0.0,
-  "cost_cny": 0,
-  "relevant_mean": 75.5,
-  "irrelevant_mean": 75.5,
-  "evidence_violation_jobs": 6,
-  "generated_at": "2026-09-05T18:37:58.185265+00:00",
+  "cost_cny": 0.0,
+  "relevant_mean": 41.3,
+  "irrelevant_mean": 19.5,
+  "evidence_violation_jobs": 0,
+  "generated_at": "2026-09-05T19:32:59.062641+00:00",
   "results": [
     {
-      "job_id": "0025b6defecc3530",
-      "company": "Coinbase",
-      "title": " Staff Infrastructure Engineer, Trading ",
+      "job_id": "f86139114a48eb46",
+      "company": "Cloudflare",
+      "title": "Software Engineer Intern (Fall 2026)",
       "expected": "relevant",
-      "overall": 75.5,
-      "confidence": 0.8,
-      "summary": "离线假评分(--fake 模式)",
-      "evidence_violations": [
-        "skills: 占位证据-skills…",
-        "experience: 占位证据-experience…",
-        "constraints: 占位证据-constraints…",
-        "growth: 占位证据-growth…"
-      ]
+      "overall": 30.5,
+      "dims": {
+        "skills": 3,
+        "experience": 3,
+        "constraints": 4,
+        "growth": 2
+      },
+      "confidence": 0.3,
+      "summary": "该 JD 严重缺乏岗位实质性内容——无具体技术要求、无职责描述、无任职资格。仅从现有信息看：候选人技术栈与 JD 暗示方向（DNS/网络安全）交集有限；作为大三学生经验不足；美国出口管制条款和线下终面要求构成硬约束风险；无任何技术成长路径信息。总体匹配度低，且评估置信度因 JD 信息不足而较低。",
+      "evidence_violations": []
     },
     {
-      "job_id": "248d2a215b0c60ca",
-      "company": "Databricks",
-      "title": " Staff Software Engineer - Database Engine Internals",
+      "job_id": "3a0b411aaafb2c44",
+      "company": "Cloudflare",
+      "title": "Software Engineer Intern (Fall 2026) - Austin, TX",
       "expected": "relevant",
-      "overall": 75.5,
-      "confidence": 0.8,
-      "summary": "离线假评分(--fake 模式)",
-      "evidence_violations": [
-        "skills: 占位证据-skills…",
-        "experience: 占位证据-experience…",
-        "constraints: 占位证据-constraints…",
-        "growth: 占位证据-growth…"
-      ]
+      "overall": 32.5,
+      "dims": {
+        "constraints": 5,
+        "growth": 2,
+        "skills": 3,
+        "experience": 3
+      },
+      "confidence": 0.3,
+      "summary": "JD为公司宣传页，未列出任何具体岗位要求（技能、经验、职责）。候选人作为大三学生，技能和项目经验与\"后端/数据工程\"意向有一定关联，但无法与JD要求进行匹配。约束条件中存在潜在面试地点要求，与候选人远程意向可能冲突。",
+      "evidence_violations": []
     },
     {
-      "job_id": "6a859cf3bd9f4a5c",
-      "company": "Stripe",
-      "title": "Backend Engineer, Billing/Tax",
+      "job_id": "5b46ddfddd547d28",
+      "company": "Figma",
+      "title": "Software Engineer Intern (Winter 2027)",
       "expected": "relevant",
-      "overall": 75.5,
-      "confidence": 0.8,
-      "summary": "离线假评分(--fake 模式)",
-      "evidence_violations": [
-        "skills: 占位证据-skills…",
-        "experience: 占位证据-experience…",
-        "constraints: 占位证据-constraints…",
-        "growth: 占位证据-growth…"
-      ]
+      "overall": 61.0,
+      "dims": {
+        "skills": 7,
+        "experience": 8,
+        "constraints": 2,
+        "growth": 6
+      },
+      "confidence": 0.85,
+      "summary": "候选人Python技能基础扎实且有项目经验，符合实习岗位基本要求；学生身份与实习级别匹配；但地点约束（需在SF/NY办公室）是主要不匹配项；有成长潜力但缺乏AI工具经验。",
+      "evidence_violations": []
     },
     {
       "job_id": "5a0d8322353de25d",
       "company": "Databricks",
       "title": "\tDelivery Solutions Architect - Communications, Media, Entertainment & Games",
       "expected": "irrelevant",
-      "overall": 75.5,
-      "confidence": 0.8,
-      "summary": "离线假评分(--fake 模式)",
-      "evidence_violations": [
-        "skills: 占位证据-skills…",
-        "experience: 占位证据-experience…",
-        "constraints: 占位证据-constraints…",
-        "growth: 占位证据-growth…"
-      ]
+      "overall": 30.0,
+      "dims": {
+        "skills": 3,
+        "experience": 1,
+        "constraints": 4,
+        "growth": 5
+      },
+      "confidence": 0.85,
+      "summary": "候选人是大三CS学生，拥有Python/SQL基础技能，但与Databricks DSA高级职位严重不匹配：核心差距在于5+年经验要求(仅1.5年)、无企业级客户面向经验、分布式系统能力缺失。硬约束方面，hybrid工作模式和30%出差与在校身份存在冲突。整体匹配度极低。",
+      "evidence_violations": []
     },
     {
       "job_id": "b7a5eb5a58967817",
       "company": "Databricks",
       "title": " Lakebase Sales Specialist (Enterprise UKI) ",
       "expected": "irrelevant",
-      "overall": 75.5,
-      "confidence": 0.8,
-      "summary": "离线假评分(--fake 模式)",
-      "evidence_violations": [
-        "skills: 占位证据-skills…",
-        "experience: 占位证据-experience…",
-        "constraints: 占位证据-constraints…",
-        "growth: 占位证据-growth…"
-      ]
+      "overall": 11.5,
+      "dims": {
+        "skills": 1,
+        "experience": 0,
+        "constraints": 3,
+        "growth": 1
+      },
+      "confidence": 0.92,
+      "summary": "这是一个企业级SaaS销售专家岗位,核心要求是丰富的销售经验、超额完成配额、独立驱动营收的能力。候选人是大三计算机专业学生,技能(后端开发)、经验(课程项目)、职业方向(技术岗)均与JD完全错位,匹配度极低。",
+      "evidence_violations": []
     },
     {
       "job_id": "68a19ca23cfdbba6",
       "company": "Databricks",
       "title": " Lakebase Sales Specialist, Associate Director (Germany)",
       "expected": "irrelevant",
-      "overall": 75.5,
-      "confidence": 0.8,
-      "summary": "离线假评分(--fake 模式)",
-      "evidence_violations": [
-        "skills: 占位证据-skills…",
-        "experience: 占位证据-experience…",
-        "constraints: 占位证据-constraints…",
-        "growth: 占位证据-growth…"
-      ]
+      "overall": 17.0,
+      "dims": {
+        "skills": 2,
+        "experience": 0,
+        "constraints": 3,
+        "growth": 2
+      },
+      "confidence": 0.95,
+      "summary": "这是一个严重的岗位错配。JD是Databricks高级销售岗位(7年+企业SaaS销售经验要求),候选人是计算机专业大三学生寻求后端开发/数据工程实习。技能方向(销售vs开发)、经验级别(资深销售vs在校学生)、岗位性质(全职销售vs实习)均存在根本性不匹配。唯一的微弱联系是候选人了解MySQL等数据库技术。",
+      "evidence_violations": []
     }
   ]
 }

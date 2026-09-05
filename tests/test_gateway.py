@@ -90,6 +90,43 @@ class TestJsonIn:
         assert row[2] > 0
 
 
+class TestValidatorRetry:
+    def test_evidence_violation_triggers_retry(self, cfg, storage):
+        """业务校验失败(证据非逐字)应回喂重评一次,最终结果通过校验并进缓存."""
+        import copy
+
+        bad = copy.deepcopy(SCORE_PAYLOAD)
+        bad["dims"]["skills"]["evidence"][0]["quote"] = "这句是模型编的"
+        good = copy.deepcopy(SCORE_PAYLOAD)
+        good["dims"]["skills"]["evidence"][0]["quote"] = "ok-quote"
+        n = {"c": 0}
+
+        def responder(kwargs):
+            n["c"] += 1
+            return tool_call_completion(bad if n["c"] == 1 else good)
+
+        gw = LLMGateway(cfg, storage, client=make_client(responder))
+
+        def validator(obj):
+            return [
+                f"{d}:{ev.quote}"
+                for d, ds in obj.dims.items()
+                for ev in ds.evidence
+                if ev.quote != "ok-quote"
+            ]
+
+        s = gw.json_in(
+            MatchScore, "JD原文:ok-quote", cache_key="kv", module="matcher", validator=validator
+        )
+        assert s.dims["skills"].evidence[0].quote == "ok-quote"
+        assert n["c"] == 2
+        # 通过校验的结果才写缓存:第二次调用不再请求 LLM
+        gw.json_in(
+            MatchScore, "JD原文:ok-quote", cache_key="kv", module="matcher", validator=validator
+        )
+        assert n["c"] == 2
+
+
 class TestInvalidPayload:
     def test_non_dict_json_raises(self, cfg, storage):
         client = raw_client(lambda kw: text_completion('"just a string"'))

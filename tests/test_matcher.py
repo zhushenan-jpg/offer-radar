@@ -3,6 +3,7 @@
 import pytest
 
 from jobpilot.agents.matcher import score_and_store, score_job
+from jobpilot.agents.prompts import RUBRIC_VERSION
 from jobpilot.models.job import JobPosting
 from jobpilot.models.profile import Profile
 from jobpilot.models.score import DIMS, MatchScore
@@ -54,7 +55,7 @@ class TestScoreAndStore:
         score = score_and_store(gw, storage, prof, JD, job_id="a" * 16)
         row = storage.scores.latest_for_job("a" * 16)
         assert row["overall"] == pytest.approx(score.overall)
-        assert row["rubric_version"] == "v1.0"
+        assert row["rubric_version"] == RUBRIC_VERSION
         assert row["model_version"] == cfg.model
         assert row["resume_version"] == prof.resume_version
 

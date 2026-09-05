@@ -90,13 +90,40 @@ class LLMGateway:
         system: str = "",
         cache_key: str | None = None,
         module: str = "",
+        validator=None,
     ) -> T:
+        """结构化输出主入口。
+
+        validator(obj) -> list[str]:业务级校验(如证据逐字命中),返回违规描述列表;
+        非空时把违规项回喂模型重评一次。缓存只存最终通过校验的结果。
+        """
         self._budget_check()
         if cache_key and self.storage is not None:
             raw = self.storage.cache.get(cache_key)
             if raw is not None:
                 self._meter(module, None, cache_hit=True)
                 return schema.model_validate_json(raw)
+
+        feedback = ""
+        obj = None
+        for attempt in range(2):
+            obj = self._call_llm_json(schema, prompt + feedback, system, module)
+            if validator is None:
+                break
+            violations = validator(obj)
+            if not violations:
+                break
+            if attempt == 0:
+                feedback = (
+                    "\n\n上一次输出存在必须修正的问题,以下证据引用不是 JD 原文的逐字片段:\n"
+                    + "\n".join(f"- {v}" for v in violations)
+                    + "\n请重新输出,所有 evidence.quote 必须是从 JD 原文中原样复制的连续字符串。"
+                )
+        self._store_cache(cache_key, obj)
+        return obj
+
+    def _call_llm_json(self, schema: type[T], prompt: str, system: str, module: str) -> T:
+        """单次 LLM 调用:instructor(tools)为主,失败走纯 JSON 回退通道."""
         try:
             obj, completion = self._instructor.chat.completions.create_with_completion(
                 model=self.cfg.model,
@@ -108,17 +135,15 @@ class LLMGateway:
                 max_retries=1,
             )
             self._meter(module, completion)
-            self._store_cache(cache_key, obj)
             return obj
         except Exception:  # noqa: BLE001 - instructor 失败形态多样,统一交给回退通道处理
-            return self._manual_json(schema, prompt, system, cache_key, module)
+            return self._manual_json(schema, prompt, system, module)
 
     def _manual_json(
         self,
         schema: type[T],
         prompt: str,
         system: str,
-        cache_key: str | None,
         module: str,
     ) -> T:
         """回退通道:纯 JSON 输出 + pydantic 校验,校验错误回喂重试."""
@@ -134,9 +159,7 @@ class LLMGateway:
             self._meter(module, completion)
             content = completion.choices[0].message.content or ""
             try:
-                obj = schema.model_validate_json(extract_json(content))
-                self._store_cache(cache_key, obj)
-                return obj
+                return schema.model_validate_json(extract_json(content))
             except ValidationError as e:
                 last_err = e
                 msgs.append({"role": "assistant", "content": content})

@@ -10,7 +10,7 @@ class FakeGateway:
         self.storage = storage
         self.calls: list[dict] = []
 
-    def json_in(self, schema, prompt, *, system="", cache_key=None, module=""):
+    def json_in(self, schema, prompt, *, system="", cache_key=None, module="", validator=None):
         self.calls.append(
             {"schema": schema, "prompt": prompt, "cache_key": cache_key, "module": module}
         )

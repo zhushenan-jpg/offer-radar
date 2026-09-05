@@ -47,14 +47,39 @@ IRRELEVANT_PATTERNS = (
     "communications",
     "account executive",
 )
+# 区分度测试应优先用学生真正会投的岗位(实习/校招),否则"资深岗 vs 学生"会压扁分数
+JUNIOR_MARKERS = (
+    "intern",
+    "university",
+    "new grad",
+    "early career",
+    "campus",
+    "student",
+)
 
 
-def pick_sample(storage: Storage, patterns: tuple[str, ...], n: int) -> list:
+def pick_sample(
+    storage: Storage, patterns: tuple[str, ...], n: int, junior_only: bool = False
+) -> list:
+    """相关组优先抽实习/校招岗。
+
+    注意用词边界匹配:LIKE '%intern%' 会误命中 'Engine Internals'。
+    """
+    import re
+
     where = " OR ".join(["lower(title) LIKE ?"] * len(patterns))
-    params = [f"%{p}%" for p in patterns] + [n]
-    return storage.conn.execute(
-        f"SELECT id, company, title FROM jobs WHERE {where} ORDER BY title LIMIT ?", params
+    candidates = storage.conn.execute(
+        f"SELECT id, company, title FROM jobs WHERE {where} ORDER BY title LIMIT 200",
+        [f"%{p}%" for p in patterns],
     ).fetchall()
+    if not junior_only:
+        return candidates[:n]
+    junior = [
+        r
+        for r in candidates
+        if any(re.search(rf"\b{m}\b", r["title"].lower()) for m in JUNIOR_MARKERS)
+    ]
+    return (junior or candidates)[:n]
 
 
 def prepare(storage: Storage, job_id: str) -> str:
@@ -68,11 +93,13 @@ def prepare(storage: Storage, job_id: str) -> str:
 
 def check_evidence(score, clean_md: str) -> list[str]:
     """返回未逐字命中 JD 原文的证据引用(幻觉信号)."""
-    normalized_md = " ".join(clean_md.split())
+    from jobpilot.agents.matcher import canonical_text
+
+    canonical_md = canonical_text(clean_md)
     bad = []
     for dim, ds in score.dims.items():
         for ev in ds.evidence:
-            if " ".join(ev.quote.split()) not in normalized_md:
+            if canonical_text(ev.quote) not in canonical_md:
                 bad.append(f"{dim}: {ev.quote[:40]}…")
     return bad
 
@@ -97,9 +124,9 @@ def main(
 
         gw = LLMGateway(cfg, storage)
 
-    sample = [(r, "relevant") for r in pick_sample(storage, RELEVANT_PATTERNS, per_side)] + [
-        (r, "irrelevant") for r in pick_sample(storage, IRRELEVANT_PATTERNS, per_side)
-    ]
+    sample = [
+        (r, "relevant") for r in pick_sample(storage, RELEVANT_PATTERNS, per_side, junior_only=True)
+    ] + [(r, "irrelevant") for r in pick_sample(storage, IRRELEVANT_PATTERNS, per_side)]
     if not sample:
         console.print("[red]库中无职位:先跑 jobpilot report --fake 完成一次采集[/]")
         raise typer.Exit(1)
@@ -123,6 +150,7 @@ def main(
                 "title": row["title"],
                 "expected": expected,
                 "overall": score.overall,
+                "dims": {k: v.score for k, v in score.dims.items()},
                 "confidence": score.confidence,
                 "summary": score.summary,
                 "evidence_violations": check_evidence(score, clean_md),

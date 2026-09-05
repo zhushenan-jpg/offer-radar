@@ -16,7 +16,11 @@ RUBRIC_WEIGHTS: dict[str, float] = {
 
 class Evidence(BaseModel):
     dim: DimKey
-    quote: str = Field(min_length=2, max_length=200, description="JD 原文片段,逐字引用")
+    quote: str = Field(
+        min_length=2,
+        max_length=240,
+        description="JD 原文片段,逐字引用,建议 ≤60 字",
+    )
     reason: str = Field(min_length=2)
 
 

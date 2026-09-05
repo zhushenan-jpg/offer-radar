@@ -24,12 +24,20 @@ BOILERPLATE_HEADERS = (
     # 英文
     "perks",
     "benefits",
+    "compensation",
+    "total rewards",
+    "salary & benefits",
     "about us",
     "about the company",
     "company description",
     "why join us",
     "what we offer",
     "our offer",
+    # 法务/合规页脚(占篇幅、无评分价值)
+    "eeo statement",
+    "equal opportunity",
+    "pay transparency",
+    "eeo",
 )
 
 
