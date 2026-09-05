@@ -76,6 +76,7 @@ def report(
     out_dir: Path = typer.Option(Path("docs/reports"), "--out-dir", help="周报输出目录"),
     fake: bool = typer.Option(False, "--fake", help="离线演示:假评分+确定性流水线,不花 API 钱"),
     no_crew: bool = typer.Option(False, "--no-crew", help="跳过 crewAI 编排,直接顺序执行"),
+    limit: int = typer.Option(None, "--limit", help="最多评分 N 条(小批量验证用)"),
 ):
     """采集 → 清洗 → 评分 → 生成求职周报(M2 主流程)."""
     import asyncio
@@ -92,6 +93,8 @@ def report(
     prof = load_profile(profile)
     cfg = GatewayConfig()
     if fake:
+        # 假评分必须记在 fake-model 名下,避免污染真模型的成本/评测数据
+        cfg = cfg.model_copy(update={"model": "fake-model"})
         from jobpilot.testing import FakeGateway
 
         gw, use_crew = FakeGateway(cfg, storage), False
@@ -101,7 +104,10 @@ def report(
         gw, use_crew = LLMGateway(cfg, storage), not no_crew
 
     path = asyncio.run(
-        run_report(storage, prof, srcs, gateway=gw, use_crew=use_crew, out_dir=out_dir, db_path=db)
+        run_report(
+            storage, prof, srcs,
+            gateway=gw, use_crew=use_crew, out_dir=out_dir, db_path=db, limit=limit,
+        )
     )
     console.print(f"[green]周报已生成:[/]{path}")
 

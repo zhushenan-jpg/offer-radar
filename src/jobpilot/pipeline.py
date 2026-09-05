@@ -80,17 +80,18 @@ def clean_pending(storage) -> int:
     return n
 
 
-def score_pending(storage, profile, gateway) -> int:
+def score_pending(storage, profile, gateway, limit: int | None = None) -> int:
     """对 status=parsed 的职位逐条评分(走网关),流转到 scored;返回处理条数."""
     from jobpilot.agents.matcher import score_and_store
 
-    n = 0
-    for job_id in storage.jobs.ids_by_status("parsed"):
+    ids = storage.jobs.ids_by_status("parsed")
+    if limit is not None:
+        ids = ids[:limit]
+    for job_id in ids:
         clean_md = storage.jobs.get_clean(job_id) or (storage.jobs.get(job_id).description_md)
         score_and_store(gateway, storage, profile, clean_md, job_id=job_id)
         storage.jobs.update_status(job_id, "scored")
-        n += 1
-    return n
+    return len(ids)
 
 
 async def run_report(
@@ -103,6 +104,7 @@ async def run_report(
     out_dir: Path | str = "docs/reports",
     db_path: Path | str = "jobpilot.db",
     top_n: int = 10,
+    limit: int | None = None,
 ) -> Path:
     sources = [s if isinstance(s, SourceCfg) else SourceCfg.model_validate(s) for s in sources]
     exec_summary = ""
@@ -118,7 +120,7 @@ async def run_report(
     if not use_crew:
         await collect_all(storage, sources)
         clean_pending(storage)
-        score_pending(storage, profile, gateway)
+        score_pending(storage, profile, gateway, limit=limit)
 
     return render_weekly(
         storage,

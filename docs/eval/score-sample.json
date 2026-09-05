@@ -1,0 +1,102 @@
+{
+  "model": "fake-model",
+  "n": 6,
+  "elapsed_s": 0.0,
+  "cost_cny": 0,
+  "relevant_mean": 75.5,
+  "irrelevant_mean": 75.5,
+  "evidence_violation_jobs": 6,
+  "generated_at": "2026-09-05T18:37:58.185265+00:00",
+  "results": [
+    {
+      "job_id": "0025b6defecc3530",
+      "company": "Coinbase",
+      "title": " Staff Infrastructure Engineer, Trading ",
+      "expected": "relevant",
+      "overall": 75.5,
+      "confidence": 0.8,
+      "summary": "离线假评分(--fake 模式)",
+      "evidence_violations": [
+        "skills: 占位证据-skills…",
+        "experience: 占位证据-experience…",
+        "constraints: 占位证据-constraints…",
+        "growth: 占位证据-growth…"
+      ]
+    },
+    {
+      "job_id": "248d2a215b0c60ca",
+      "company": "Databricks",
+      "title": " Staff Software Engineer - Database Engine Internals",
+      "expected": "relevant",
+      "overall": 75.5,
+      "confidence": 0.8,
+      "summary": "离线假评分(--fake 模式)",
+      "evidence_violations": [
+        "skills: 占位证据-skills…",
+        "experience: 占位证据-experience…",
+        "constraints: 占位证据-constraints…",
+        "growth: 占位证据-growth…"
+      ]
+    },
+    {
+      "job_id": "6a859cf3bd9f4a5c",
+      "company": "Stripe",
+      "title": "Backend Engineer, Billing/Tax",
+      "expected": "relevant",
+      "overall": 75.5,
+      "confidence": 0.8,
+      "summary": "离线假评分(--fake 模式)",
+      "evidence_violations": [
+        "skills: 占位证据-skills…",
+        "experience: 占位证据-experience…",
+        "constraints: 占位证据-constraints…",
+        "growth: 占位证据-growth…"
+      ]
+    },
+    {
+      "job_id": "5a0d8322353de25d",
+      "company": "Databricks",
+      "title": "\tDelivery Solutions Architect - Communications, Media, Entertainment & Games",
+      "expected": "irrelevant",
+      "overall": 75.5,
+      "confidence": 0.8,
+      "summary": "离线假评分(--fake 模式)",
+      "evidence_violations": [
+        "skills: 占位证据-skills…",
+        "experience: 占位证据-experience…",
+        "constraints: 占位证据-constraints…",
+        "growth: 占位证据-growth…"
+      ]
+    },
+    {
+      "job_id": "b7a5eb5a58967817",
+      "company": "Databricks",
+      "title": " Lakebase Sales Specialist (Enterprise UKI) ",
+      "expected": "irrelevant",
+      "overall": 75.5,
+      "confidence": 0.8,
+      "summary": "离线假评分(--fake 模式)",
+      "evidence_violations": [
+        "skills: 占位证据-skills…",
+        "experience: 占位证据-experience…",
+        "constraints: 占位证据-constraints…",
+        "growth: 占位证据-growth…"
+      ]
+    },
+    {
+      "job_id": "68a19ca23cfdbba6",
+      "company": "Databricks",
+      "title": " Lakebase Sales Specialist, Associate Director (Germany)",
+      "expected": "irrelevant",
+      "overall": 75.5,
+      "confidence": 0.8,
+      "summary": "离线假评分(--fake 模式)",
+      "evidence_violations": [
+        "skills: 占位证据-skills…",
+        "experience: 占位证据-experience…",
+        "constraints: 占位证据-constraints…",
+        "growth: 占位证据-growth…"
+      ]
+    }
+  ]
+}
