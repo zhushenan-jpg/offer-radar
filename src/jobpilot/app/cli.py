@@ -6,7 +6,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-app = typer.Typer(no_args_is_help=True, help="JobPilot — 多 Agent 求职调研助手")
+app = typer.Typer(no_args_is_help=True, help="OfferRadar — 多 Agent 求职调研助手")
 console = Console()
 
 

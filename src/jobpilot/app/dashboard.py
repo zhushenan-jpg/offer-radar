@@ -1,4 +1,4 @@
-"""JobPilot 求职雷达面板(Streamlit).
+"""OfferRadar 求职雷达面板(Streamlit).
 
 本地运行:.venv/Scripts/streamlit run src/jobpilot/app/dashboard.py
 数据源:环境变量 JOBPLOT_DB(默认 ./jobpilot.db);周报目录 JOBPLOT_REPORTS。
@@ -30,8 +30,8 @@ def get_storage() -> Storage:
 
 
 storage = get_storage()
-st.set_page_config(page_title="JobPilot 求职雷达", page_icon="🎯", layout="wide")
-st.title("🎯 JobPilot 求职雷达")
+st.set_page_config(page_title="OfferRadar 求职雷达", page_icon="🎯", layout="wide")
+st.title("🎯 OfferRadar 求职雷达")
 st.caption(f"数据库:{DB} · rubric {RUBRIC_VERSION}")
 
 tab_over, tab_jobs, tab_review, tab_report, tab_eval = st.tabs(

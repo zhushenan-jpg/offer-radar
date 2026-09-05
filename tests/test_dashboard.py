@@ -74,19 +74,22 @@ def test_dashboard_smoke(demo_db):
         stderr=subprocess.DEVNULL,
     )
     try:
+        # trust_env=False:httpx 默认配置与 streamlit 1.63 新代理层不兼容(502)
+        client = httpx.Client(trust_env=False)
         base = f"http://127.0.0.1:{port}"
         deadline = time.time() + 90
         healthy = False
         while time.time() < deadline:
             try:
-                if httpx.get(f"{base}/_stcore/health", timeout=3).text.strip() == "ok":
+                if client.get(f"{base}/_stcore/health", timeout=3).text.strip() == "ok":
                     healthy = True
                     break
             except httpx.HTTPError:
                 time.sleep(1)
         assert healthy, "streamlit 未在 90s 内就绪"
-        page = httpx.get(base, timeout=10)
+        page = client.get(base, timeout=10)
         assert page.status_code == 200
+        client.close()
     finally:
         proc.terminate()
         proc.wait(timeout=15)

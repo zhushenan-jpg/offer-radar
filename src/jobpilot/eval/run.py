@@ -76,7 +76,7 @@ def _write_report(storage, metrics: dict, out_path, model_version: str, rescored
     m_sp, m_mae = metrics["spearman"], metrics["mae"]
     k_overlap = metrics["topk_overlap"]
     lines = [
-        "# JobPilot 评测报告",
+        "# OfferRadar 评测报告",
         "",
         f"- 样本:n={metrics['n']} | 本轮重评 {rescored} 条 | rubric {RUBRIC_VERSION} | model {model_version}",
         f"- **Spearman 相关:{m_sp}**(模型排序与人工排序的一致性)",

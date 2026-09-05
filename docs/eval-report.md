@@ -1,4 +1,4 @@
-# JobPilot 评测报告
+# OfferRadar 评测报告
 
 - 样本:n=12 | 本轮重评 0 条 | rubric v1.1 | model mimo-v2.5-pro
 - **Spearman 相关:0.302**(模型排序与人工排序的一致性)

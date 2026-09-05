@@ -108,7 +108,7 @@ def build_crew(cfg, storage, profile, sources):
     scout = Agent(
         role="职位搜集专员",
         goal="驱动采集工具,拿到本周目标公司全部新职位并如实汇报",
-        backstory="你负责 JobPilot 的数据入口,只信工具返回的结果,绝不编造职位。",
+        backstory="你负责 OfferRadar 的数据入口,只信工具返回的结果,绝不编造职位。",
         llm=llm,
         tools=[CollectAllTool(storage, sources, "jobpilot.db")],
         allow_delegation=False,

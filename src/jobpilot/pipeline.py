@@ -19,7 +19,7 @@ from jobpilot.collectors.clean import clean_jd
 from jobpilot.collectors.dedup import dedupe_jobs
 from jobpilot.reporting import render_weekly
 
-USER_AGENT = "JobPilot/0.1 (student resume project; polite crawler via official APIs)"
+USER_AGENT = "OfferRadar/0.1 (student resume project; polite crawler via official APIs)"
 CONCURRENCY = 5
 
 
