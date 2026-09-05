@@ -68,5 +68,43 @@ def score(
         console.print("[dim]--fake 模式:以上为离线假数据,不花 API 费用[/]")
 
 
+@app.command()
+def report(
+    profile: Path = typer.Option(Path("profile.yaml"), "--profile", exists=True),
+    db: Path = typer.Option(Path("jobpilot.db"), "--db", help="SQLite 路径"),
+    sources: Path = typer.Option(Path("sources.yaml"), "--sources", exists=True),
+    out_dir: Path = typer.Option(Path("docs/reports"), "--out-dir", help="周报输出目录"),
+    fake: bool = typer.Option(False, "--fake", help="离线演示:假评分+确定性流水线,不花 API 钱"),
+    no_crew: bool = typer.Option(False, "--no-crew", help="跳过 crewAI 编排,直接顺序执行"),
+):
+    """采集 → 清洗 → 评分 → 生成求职周报(M2 主流程)."""
+    import asyncio
+
+    import yaml
+
+    from jobpilot.config import GatewayConfig
+    from jobpilot.models.profile import load_profile
+    from jobpilot.pipeline import run_report
+    from jobpilot.storage.db import Storage
+
+    srcs = yaml.safe_load(sources.read_text(encoding="utf-8"))
+    storage = Storage.open(db)
+    prof = load_profile(profile)
+    cfg = GatewayConfig()
+    if fake:
+        from jobpilot.testing import FakeGateway
+
+        gw, use_crew = FakeGateway(cfg, storage), False
+    else:
+        from jobpilot.llm_gateway.gateway import LLMGateway
+
+        gw, use_crew = LLMGateway(cfg, storage), not no_crew
+
+    path = asyncio.run(
+        run_report(storage, prof, srcs, gateway=gw, use_crew=use_crew, out_dir=out_dir, db_path=db)
+    )
+    console.print(f"[green]周报已生成:[/]{path}")
+
+
 def main() -> None:
     app()

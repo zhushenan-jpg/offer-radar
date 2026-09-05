@@ -18,23 +18,26 @@ class JobRepo:
         self.conn = conn
 
     def upsert(self, job: JobPosting) -> None:
+        """已存在则仅刷新 last_seen 与描述,first_seen/status 保持不变."""
         self.conn.execute(
-            """INSERT INTO jobs(id, company_id, title, location, remote, url, department,
-                 description_raw_md, description_clean_md, fingerprint, first_seen, last_seen, status)
-               VALUES(?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """INSERT INTO jobs(id, company_id, source, company, title, location, remote, url,
+                 department, description_raw_md, description_clean_md, fingerprint,
+                 first_seen, last_seen, status)
+               VALUES(?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, '', ?, ?, ?, ?)
                ON CONFLICT(id) DO UPDATE SET
                  title=excluded.title, location=excluded.location, remote=excluded.remote,
                  url=excluded.url, department=excluded.department,
                  description_raw_md=excluded.description_raw_md, last_seen=excluded.last_seen""",
             (
                 job.id,
+                job.source,
+                job.company,
                 job.title,
                 job.location,
                 int(job.remote),
                 job.url,
                 job.department,
                 job.description_md,
-                "",
                 job.fingerprint,
                 job.first_seen.isoformat(),
                 job.last_seen.isoformat(),
@@ -49,8 +52,8 @@ class JobRepo:
             return None
         return JobPosting(
             id=row["id"],
-            source="manual",
-            company=row["company_id"] or "manual",
+            source=row["source"] or "manual",
+            company=row["company"] or "manual",
             title=row["title"],
             location=row["location"] or "",
             remote=bool(row["remote"]),
@@ -58,6 +61,44 @@ class JobRepo:
             department=row["department"] or "",
             description_md=row["description_raw_md"] or "",
         )
+
+    def get_clean(self, job_id: str) -> str:
+        row = self.conn.execute(
+            "SELECT description_clean_md FROM jobs WHERE id=?", (job_id,)
+        ).fetchone()
+        return row[0] if row else ""
+
+    def set_clean_md(self, job_id: str, clean_md: str) -> None:
+        self.conn.execute("UPDATE jobs SET description_clean_md=? WHERE id=?", (clean_md, job_id))
+        self.conn.commit()
+
+    def update_status(self, job_id: str, status: str) -> None:
+        self.conn.execute("UPDATE jobs SET status=? WHERE id=?", (status, job_id))
+        self.conn.commit()
+
+    def ids_by_status(self, status: str) -> list[str]:
+        return [
+            r[0]
+            for r in self.conn.execute(
+                "SELECT id FROM jobs WHERE status=? ORDER BY first_seen", (status,)
+            ).fetchall()
+        ]
+
+    def scored_with_scores(self) -> list[dict]:
+        """全部已评分职位的最新评分,按 overall 降序;周报数据源."""
+        rows = self.conn.execute(
+            """SELECT j.company, j.title, j.url, j.location, s.overall, s.dims_json,
+                 s.confidence, s.summary, s.review_status, s.rubric_version
+               FROM jobs j JOIN scores s ON s.job_id = j.id
+               WHERE s.id = (SELECT MAX(id) FROM scores WHERE job_id = j.id)
+               ORDER BY s.overall DESC"""
+        ).fetchall()
+        out = []
+        for r in rows:
+            d = dict(r)
+            d["dims"] = json.loads(d.pop("dims_json"))
+            out.append(d)
+        return out
 
 
 class ScoreRepo:
@@ -118,22 +159,23 @@ class UsageRepo:
         ts: str | None = None,
     ) -> None:
         self.conn.execute(
-            "INSERT INTO usage(ts, module, model, prompt_tokens, completion_tokens, cost_cny, cache_hit)"
-            " VALUES(?,?,?,?,?,?,?)",
+            "INSERT INTO usage(ts, module, model, prompt_tokens, completion_tokens, cost_cny,"
+            " cache_hit) VALUES(?,?,?,?,?,?,?)",
             (ts or _now(), module, model, prompt_tokens, completion_tokens, cost_cny, cache_hit),
         )
         self.conn.commit()
 
     def month_cost(self) -> float:
         row = self.conn.execute(
-            "SELECT COALESCE(SUM(cost_cny),0) FROM usage WHERE substr(ts,1,7)=strftime('%Y-%m','now')"
+            "SELECT COALESCE(SUM(cost_cny),0) FROM usage"
+            " WHERE substr(ts,1,7)=strftime('%Y-%m','now')"
         ).fetchone()
         return row[0]
 
     def month_cost_by_module(self) -> dict[str, float]:
         rows = self.conn.execute(
-            "SELECT module, SUM(cost_cny) FROM usage WHERE substr(ts,1,7)=strftime('%Y-%m','now')"
-            " GROUP BY module"
+            "SELECT module, SUM(cost_cny) FROM usage"
+            " WHERE substr(ts,1,7)=strftime('%Y-%m','now') GROUP BY module"
         ).fetchall()
         return {r[0]: r[1] for r in rows}
 

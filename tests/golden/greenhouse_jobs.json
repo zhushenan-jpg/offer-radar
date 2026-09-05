@@ -1,0 +1,22 @@
+{
+  "jobs": [
+    {
+      "id": 1001,
+      "title": "Backend Engineer Intern",
+      "absolute_url": "https://boards.greenhouse.io/stripe/jobs/1001",
+      "updated_at": "2026-08-20T10:00:00-04:00",
+      "location": { "name": "Remote, US" },
+      "departments": [{ "name": "Engineering" }],
+      "content": "&lt;h3&gt;About the role&lt;/h3&gt;&lt;p&gt;Build payment APIs with &lt;strong&gt;Python&lt;/strong&gt; and SQL. Experience with distributed systems preferred.&lt;/p&gt;&lt;h2&gt;Benefits&lt;/h2&gt;&lt;p&gt;Free lunch &amp;amp; gym.&lt;/p&gt;"
+    },
+    {
+      "id": 1002,
+      "title": "Data Analyst, Finance",
+      "absolute_url": "https://boards.greenhouse.io/stripe/jobs/1002",
+      "updated_at": "2026-08-25T09:00:00-04:00",
+      "location": { "name": "San Francisco" },
+      "departments": [{ "name": "Finance" }],
+      "content": "&lt;p&gt;Analyze revenue data with SQL and Python.&lt;/p&gt;"
+    }
+  ]
+}

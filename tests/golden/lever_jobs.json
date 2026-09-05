@@ -1,0 +1,26 @@
+[
+  {
+    "id": "9f8e7d6c-1111-2222-3333-444455556666",
+    "text": "Site Reliability Engineer, Intern",
+    "hostedUrl": "https://jobs.lever.co/plaid/9f8e7d6c",
+    "createdAt": 1755705600000,
+    "categories": {
+      "location": "Remote",
+      "team": "Engineering",
+      "commitment": "Internship"
+    },
+    "descriptionPlain": "Keep our infrastructure healthy.\n\nRequirements:\n- Strong Python skills\n- Linux fundamentals\n\nPerks: competitive salary, free snacks."
+  },
+  {
+    "id": "aaaa1111-bbbb-cccc-dddd-eeeeffff0000",
+    "text": "Backend  Engineer",
+    "hostedUrl": "https://jobs.lever.co/plaid/aaaa1111",
+    "createdAt": 1755792000000,
+    "categories": {
+      "location": "New York",
+      "team": "Engineering",
+      "commitment": "Full-time"
+    },
+    "descriptionPlain": "Design and ship backend services in Python."
+  }
+]

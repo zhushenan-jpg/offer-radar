@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS companies(
   display_name TEXT NOT NULL, active INTEGER DEFAULT 1);
 CREATE TABLE IF NOT EXISTS jobs(
   id TEXT PRIMARY KEY, company_id INTEGER REFERENCES companies,
+  source TEXT DEFAULT '', company TEXT DEFAULT '',
   title TEXT NOT NULL, location TEXT DEFAULT '', remote INTEGER DEFAULT 0,
   url TEXT DEFAULT '', department TEXT DEFAULT '',
   description_raw_md TEXT DEFAULT '', description_clean_md TEXT DEFAULT '',
