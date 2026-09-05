@@ -36,3 +36,7 @@ addopts = "-q"
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+
+[tool.ruff.lint.per-file-ignores]
+# typer 的参数默认值必须调用 Option()/Argument(),B008 属于框架误报
+"src/jobpilot/app/cli.py" = ["B008"]

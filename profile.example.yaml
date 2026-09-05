@@ -1,0 +1,24 @@
+name: 张三
+skills: [Python, FastAPI, SQL, Git, Docker, Linux]
+years: 1.5
+education: 本科·计算机科学与技术(大三在读)
+resume_md: |
+  张三 —— 计算机科学与技术专业大三学生
+
+  技能:
+  - Python 约 1.5 年,熟悉 FastAPI、SQLAlchemy
+  - 数据库:MySQL/SQLite,能写复杂查询与建表设计
+  - 工具:Git、Linux 基本运维、Docker 部署过课程项目
+
+  项目经历:
+  - 校园二手交易平台(FastAPI + SQLite):负责用户/订单模块与部署,日活约 200
+  - 课程设计:用 Python 爬取公开数据并做简单分析(pandas)
+
+  其他:校级二等奖学金; CET-6;每周可实习 4 天
+desired:
+  roles: [后端开发, 数据工程]
+  cities: [远程, 上海]
+  remote_ok: true
+  salary_min: 3000
+  salary_max: 8000
+  keywords_exclude: [保险, 传销, 培训费]
