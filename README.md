@@ -56,6 +56,8 @@ cp profile.example.yaml profile.yaml
 ```
 
 > macOS / Linux 用户:上述命令中的 `.venv/Scripts/` 对应 `.venv/bin/`,`copy` 对应 `cp`;`jobpilot` 命令也可用 `python -m jobpilot` 调用。
+>
+> 需要 Python 3.11 或 3.12(3.13 暂不支持:通知组件 apprise 依赖的 `imghdr` 已被移除)。`pytest -m live` 需要可访问中转站/官方端点的稳定网络,失败会自动重试一次。
 
 ## 部署(Streamlit Community Cloud)
 

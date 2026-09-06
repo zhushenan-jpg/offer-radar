@@ -58,8 +58,26 @@ class BrowserCollector(Collector):
         super().__init__(client)
         self._runner = runner or (lambda url: _default_runner(url, cfg))
 
+    async def _robots_allows(self, url: str) -> bool:
+        """robots.txt 校验:显式 Disallow 则拒绝;无 robots/获取失败视为允许."""
+        from urllib import robotparser
+        from urllib.parse import urlparse
+
+        parsed = urlparse(url)
+        rp = robotparser.RobotFileParser()
+        try:
+            resp = await self._client.get(f"{parsed.scheme}://{parsed.netloc}/robots.txt")
+            if resp.status_code in (401, 403):
+                return False  # robots 存在但禁止读取 → 保守视为不允许
+            rp.parse(resp.text.splitlines() if resp.status_code == 200 else [])
+        except Exception:  # noqa: BLE001 - robots 获取失败不阻塞,与主流爬虫惯例一致
+            return True
+        return rp.can_fetch("*", url)
+
     async def fetch(self, slug: str, company: str) -> list[JobPosting]:
         """slug 即目标页面 URL。browser-use 为同步阻塞,放入线程执行."""
+        if not await self._robots_allows(slug):
+            raise CollectorError(f"robots.txt 不允许采集 {slug},已跳过")
         items = await asyncio.to_thread(self._runner, slug)
         jobs = []
         for item in items:

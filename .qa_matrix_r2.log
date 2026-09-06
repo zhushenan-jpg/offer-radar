@@ -1,0 +1,32 @@
+=== 1. score --fake(离线单条评分)===
+[PASS] score --fake (exit=0)
+=== 2. report --fake --limit 3(真实采集 15 源 + 假评分)===
+[PASS] report --fake --limit 3 (exit=0)
+=== 3. eval-seed --n 8 ===
+[PASS] eval-seed (exit=0)
+=== 4. eval-annotate ×3 ===
+[PASS] eval-annotate #1 (exit=0)
+[PASS] eval-annotate #2 (exit=0)
+[PASS] eval-annotate #3 (exit=0)
+=== 5. eval-run --fake ===
+[PASS] eval-run --fake (exit=0)
+=== 6. watch --once --limit 2(真实 API,预算安全阀生效)===
+[PASS] watch --once --limit 2 (exit=0)
+=== 7. parse-resume(文本型 PDF,零模型调用)===
+[PASS] parse-resume (exit=0)
+=== 8. 错误路径:无标注评测集 ===
+[PASS] eval-run 空库报错 (exit=1)
+
+=== 矩阵结果汇总 ===
+  [PASS] score --fake
+  [PASS] report --fake --limit 3
+  [PASS] eval-seed
+  [PASS] eval-annotate #1
+  [PASS] eval-annotate #2
+  [PASS] eval-annotate #3
+  [PASS] eval-run --fake
+  [PASS] watch --once --limit 2
+  [PASS] parse-resume
+  [PASS] eval-run 空库报错
+
+合计 10 项,失败 0 项

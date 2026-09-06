@@ -127,20 +127,17 @@ with tab_review:
     if not review:
         st.info("暂无待复核职位(低置信度评分会出现在这里)")
     for r in review:
-        with st.form(key=f"review-{r['job_id'] if 'job_id' in r else r['title']}"):
+        with st.form(key=f"review-{r['job_id']}"):
             st.write(
                 f"**{r['company']} — {r['title']}** · 模型分 {r['overall']} · 置信度 {r['confidence']:.2f}"
             )
             human = st.number_input(
-                "人工综合分", 0, 100, value=int(r["overall"]), key=f"n-{r['title']}"
+                "人工综合分", 0, 100, value=int(r["overall"]), key=f"n-{r['job_id']}"
             )
             if st.form_submit_button("提交标注"):
-                jid = storage.conn.execute(
-                    "SELECT job_id FROM scores WHERE overall=? ORDER BY id DESC LIMIT 1",
-                    (r["overall"],),
-                ).fetchone()[0]
-                storage.annotations.add(jid, float(human), annotator)
-                st.success(f"已记录 {jid[:8]}… = {human}")
+                # 直接用行内 job_id;禁止按分数反查(同分职位会标错)
+                storage.annotations.add(r["job_id"], float(human), annotator)
+                st.success(f"已记录 {r['job_id'][:8]}… = {human}")
 
 with tab_report:
     reports = sorted(REPORTS_DIR.glob("*.md"), reverse=True) if REPORTS_DIR.exists() else []
