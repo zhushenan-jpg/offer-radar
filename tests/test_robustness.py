@@ -91,7 +91,12 @@ class TestCliErrorPaths:
     def test_eval_run_insufficient_annotations(self, tmp_path):
         result = runner.invoke(
             app,
-            ["eval-run", "--db", str(tmp_path / "empty.db"), "--fake"],
+            [
+                "eval-run",
+                "--db", str(tmp_path / "empty.db"),
+                "--profile", str(Path(__file__).parents[1] / "profile.example.yaml"),
+                "--fake",
+            ],
         )
         assert result.exit_code == 1
         assert "评测集为空" in result.output
