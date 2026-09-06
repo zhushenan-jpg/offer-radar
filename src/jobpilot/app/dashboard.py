@@ -22,10 +22,25 @@ from jobpilot.storage.db import Storage
 
 
 def _default_db() -> Path:
-    """本地开发库优先;不存在时回退到随仓库的演示库(云端部署场景)."""
+    """本地开发库优先;不存在或为空库(无 jobs 行)时回退到随仓库的演示库.
+
+    空库回退是必需的:Storage.open 会自动建库,云端容器里上一次运行
+    留下的空 jobpilot.db 会让"文件存在"判断失真.
+    """
     local = Path("jobpilot.db")
     if local.exists():
-        return local
+        try:
+            import sqlite3
+
+            conn = sqlite3.connect(local)
+            try:
+                has_jobs = conn.execute("SELECT COUNT(*) FROM jobs").fetchone()[0] > 0
+            finally:
+                conn.close()
+            if has_jobs:
+                return local
+        except sqlite3.Error:
+            pass  # 空文件/非库文件:按不存在处理
     demo = Path("deploy/demo_jobpilot.db")
     return demo if demo.exists() else local
 
