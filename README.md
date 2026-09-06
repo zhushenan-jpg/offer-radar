@@ -3,7 +3,7 @@
 [![CI](https://github.com/zhushenan-jpg/offer-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/zhushenan-jpg/offer-radar/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
-![Tests](https://img.shields.io/badge/tests-84%20passed-brightgreen)
+![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
 
 > OfferRadar · 求职机会雷达 | English: [README.en.md](README.en.md)
 

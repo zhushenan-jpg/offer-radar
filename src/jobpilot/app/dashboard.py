@@ -148,27 +148,36 @@ with tab_report:
         st.markdown(picked_report.read_text(encoding="utf-8"))
 
 with tab_eval:
-    pairs = storage.annotations.pairs_with_predictions()
-    if len(pairs) < 3:
-        st.info(f"标注不足({len(pairs)} 条,至少 3 条):在「待人工复核」或 CLI eval-annotate 中打分")
+    all_pairs = storage.annotations.pairs_with_predictions()
+    if not all_pairs:
+        st.info("暂无标注:在「待人工复核」或 CLI eval-annotate 中打分后这里会显示一致性指标")
     else:
-        metrics = compute_metrics(pairs)
-        m1, m2, m3 = st.columns(3)
-        m1.metric("Spearman 相关", metrics["spearman"])
-        m2.metric("MAE", metrics["mae"])
-        m3.metric("Top-3 重合率", metrics["topk_overlap"])
-        st.dataframe(
-            pd.DataFrame(
-                [
-                    {
-                        "公司": p["company"],
-                        "职位": p["title"][:40],
-                        "模型分": p["pred"],
-                        "人工分": p["human"],
-                        "差值": round(p["pred"] - p["human"], 1),
-                    }
-                    for p in pairs
-                ]
-            ),
-            hide_index=True,
+        annotators = ["全部"] + sorted({p["annotator"] for p in all_pairs})
+        chosen = st.selectbox("标注人", annotators)
+        pairs = (
+            all_pairs if chosen == "全部" else [p for p in all_pairs if p["annotator"] == chosen]
         )
+        if len(pairs) < 3:
+            st.info(f"该标注人仅 {len(pairs)} 条,不足 3 条,暂不计算指标")
+        else:
+            metrics = compute_metrics(pairs)
+            m1, m2, m3 = st.columns(3)
+            m1.metric("Spearman 相关", metrics["spearman"])
+            m2.metric("MAE", metrics["mae"])
+            m3.metric("Top-3 重合率", metrics["topk_overlap"])
+            st.dataframe(
+                pd.DataFrame(
+                    [
+                        {
+                            "公司": p["company"],
+                            "职位": p["title"][:40],
+                            "标注人": p["annotator"],
+                            "模型分": p["pred"],
+                            "人工分": p["human"],
+                            "差值": round(p["pred"] - p["human"], 1),
+                        }
+                        for p in pairs
+                    ]
+                ),
+                hide_index=True,
+            )

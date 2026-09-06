@@ -202,11 +202,7 @@ def eval_run(
         metrics = run_eval(
             storage,
             gw,
-            load_profile(
-                Path("profile.example.yaml")
-                if not Path("profile.yaml").exists()
-                else "profile.yaml"
-            ),
+            load_profile(_require_profile(Path("profile.yaml"))),
             annotator=annotator,
             out_path=out,
             top_k=top_k,
