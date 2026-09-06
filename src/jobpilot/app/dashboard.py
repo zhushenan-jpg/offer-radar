@@ -20,7 +20,16 @@ from jobpilot.agents.prompts import RUBRIC_VERSION
 from jobpilot.eval.metrics import compute_metrics
 from jobpilot.storage.db import Storage
 
-DB = Path(os.environ.get("JOBPLOT_DB", "jobpilot.db"))
+def _default_db() -> Path:
+    """本地开发库优先;不存在时回退到随仓库的演示库(云端部署场景)."""
+    local = Path("jobpilot.db")
+    if local.exists():
+        return local
+    demo = Path("deploy/demo_jobpilot.db")
+    return demo if demo.exists() else local
+
+
+DB = Path(os.environ.get("JOBPLOT_DB") or _default_db())
 REPORTS_DIR = Path(os.environ.get("JOBPLOT_REPORTS", "docs/reports"))
 
 
