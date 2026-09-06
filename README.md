@@ -1,6 +1,11 @@
 # OfferRadar
 
-> OfferRadar · 求职机会雷达
+[![CI](https://github.com/zhushenan-jpg/offer-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/zhushenan-jpg/offer-radar/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![Python](https://img.shields.io/badge/python-3.11%2B-blue)
+![Tests](https://img.shields.io/badge/tests-84%20passed-brightgreen)
+
+> OfferRadar · 求职机会雷达 | English: [README.en.md](README.en.md)
 
 多 Agent 求职调研助手:监控目标公司职位发布 → 简历-JD 匹配评分(带证据链)→ 公司调研 → 求职周报。LLM 层模型无关(任何 OpenAI 兼容端点),当前默认使用 mimo-v2.5-pro。
 
