@@ -50,11 +50,13 @@ REPORTS_DIR = Path(os.environ.get("JOBPLOT_REPORTS", "docs/reports"))
 
 
 @st.cache_resource
-def get_storage() -> Storage:
-    return Storage.open(DB)
+def get_storage(db_path: Path) -> Storage:
+    return Storage.open(db_path)
 
 
-storage = get_storage()
+# DB 路径作为缓存键:路径变化(如本地库→演示库回退)时必须重建连接,
+# 否则热更新场景下旧句柄会一直指向空库
+storage = get_storage(DB)
 st.set_page_config(page_title="OfferRadar 求职雷达", page_icon="🎯", layout="wide")
 st.title("🎯 OfferRadar 求职雷达")
 st.caption(f"数据库:{DB} · rubric {RUBRIC_VERSION}")
