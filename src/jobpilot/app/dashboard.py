@@ -20,6 +20,7 @@ from jobpilot.agents.prompts import RUBRIC_VERSION
 from jobpilot.eval.metrics import compute_metrics
 from jobpilot.storage.db import Storage
 
+
 def _default_db() -> Path:
     """本地开发库优先;不存在时回退到随仓库的演示库(云端部署场景)."""
     local = Path("jobpilot.db")

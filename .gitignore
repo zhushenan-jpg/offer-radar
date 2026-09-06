@@ -16,3 +16,4 @@ build/
 !deploy/demo_jobpilot.db
 .qa_tmp/
 .qa_matrix.log
+.qa_runs.json
