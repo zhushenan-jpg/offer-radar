@@ -178,6 +178,7 @@ def eval_annotate(
 @app.command("eval-run")
 def eval_run(
     db: Path = typer.Option(Path("jobpilot.db"), "--db"),
+    profile: Path = typer.Option(Path("profile.yaml"), "--profile"),
     annotator: str = typer.Option(None, "--annotator", help="只统计该标注人"),
     out: Path = typer.Option(Path("docs/eval-report.md"), "--out"),
     top_k: int = typer.Option(3, "--top-k"),
@@ -190,6 +191,7 @@ def eval_run(
     from jobpilot.storage.db import Storage
 
     storage = Storage.open(db)
+    prof = load_profile(_require_profile(profile))
     cfg = GatewayConfig()
     if fake:
         cfg = cfg.model_copy(update={"model": "fake-model"})
@@ -202,7 +204,7 @@ def eval_run(
         metrics = run_eval(
             storage,
             gw,
-            load_profile(_require_profile(Path("profile.yaml"))),
+            prof,
             annotator=annotator,
             out_path=out,
             top_k=top_k,
