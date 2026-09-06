@@ -12,10 +12,17 @@
 ## 快速开始(M1)
 
 ```bash
+# ---- Windows ----
 py -3.12 -m venv .venv
-.venv/Scripts/pip install -e ".[dev,m2,m3]"
-copy .env.example .env           # 填入 API key
-copy profile.example.yaml profile.yaml  # 换成你的真实简历
+.venv\Scripts\pip install -e ".[dev,m2,m3]"
+copy .env.example .env                    # 填入 API key(任意 OpenAI 兼容端点)
+copy profile.example.yaml profile.yaml    # 换成你的真实简历
+
+# ---- macOS / Linux ----
+python3.12 -m venv .venv
+.venv/bin/pip install -e ".[dev,m2,m3]"
+cp .env.example .env
+cp profile.example.yaml profile.yaml
 
 # 离线演示(内置假 LLM,不花 API 钱)
 .venv/Scripts/jobpilot score --file examples/jobs/jd_backend_intern.md --profile profile.example.yaml --fake
@@ -42,6 +49,8 @@ copy profile.example.yaml profile.yaml  # 换成你的真实简历
 # PDF 简历解析(文本型零成本抽取,扫描件走视觉模型)
 .venv/Scripts/jobpilot parse-resume --file 我的简历.pdf
 ```
+
+> macOS / Linux 用户:上述命令中的 `.venv/Scripts/` 对应 `.venv/bin/`,`copy` 对应 `cp`;`jobpilot` 命令也可用 `python -m jobpilot` 调用。
 
 ## 部署(Streamlit Community Cloud)
 
