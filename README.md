@@ -14,50 +14,48 @@
 - 需求与概要设计:[docs/01-需求分析与概要设计.md](docs/01-需求分析与概要设计.md)
 - 详细设计:[docs/02-详细设计.md](docs/02-详细设计.md)
 
-## 快速开始(M1)
+## 快速开始（全浏览器操作）
 
 ```bash
-# ---- Windows ----
+# 1. 安装依赖
 py -3.12 -m venv .venv
 .venv\Scripts\pip install -e ".[dev,m2,m3]"
-copy .env.example .env                    # 填入 API key(任意 OpenAI 兼容端点)
-copy profile.example.yaml profile.yaml    # 换成你的真实简历
 
-# ---- macOS / Linux ----
-python3.12 -m venv .venv
-.venv/bin/pip install -e ".[dev,m2,m3]"
-cp .env.example .env
-cp profile.example.yaml profile.yaml
+# 2. 启动应用（浏览器自动打开）
+.venv\Scripts\streamlit run src/jobpilot/app/app.py
+```
 
-# 离线演示(内置假 LLM,不花 API 钱)
+**启动后在浏览器中操作：**
+
+1. 点击 **⚙️ 设置** → 输入 API Key → 保存
+2. 点击 **📝 我的简历** → 编辑个人信息 → 保存
+3. 点击 **📊 在线评分** → 粘贴 JD 文本 → 点击评分
+
+**就这么简单！无需编辑任何配置文件。**
+
+---
+
+## 其他启动方式
+
+### Docker 启动
+```bash
+docker compose up -d
+# 浏览器访问 http://localhost:8501
+```
+
+### 命令行方式（高级用户）
+```bash
+# 离线演示
 .venv/Scripts/jobpilot score --file examples/jobs/jd_backend_intern.md --profile profile.example.yaml --fake
 
 # 真实调用
 .venv/Scripts/jobpilot score --file examples/jobs/jd_backend_intern.md --profile profile.yaml
 
-# 测试(全部 mock,不花 API 钱)
-.venv/Scripts/pytest
-# 真 API 冒烟(花 1 次调用,需先配好 .env)
-.venv/Scripts/pytest -m live
-
-# 评测闭环:抽样 → 人工标注 → 一致性指标(rubric/prompt 变更后重跑即回归)
-.venv/Scripts/jobpilot eval-seed --n 8
-.venv/Scripts/jobpilot eval-annotate --job-id <id> --score <0-100>
-.venv/Scripts/jobpilot eval-run                # 生成 docs/eval-report.md
-
-# 求职雷达面板
-.venv/Scripts/streamlit run src/jobpilot/app/dashboard.py
-
-# 定时监控:每日 07:30 增量+高分推送 / 周五 21:00 周全量(错峰) / 08:00 预算巡检
-.venv/Scripts/jobpilot watch                # 或 --once 立即跑一次增量
-
-# PDF 简历解析(文本型零成本抽取,扫描件走视觉模型)
-.venv/Scripts/jobpilot parse-resume --file 我的简历.pdf
+# 定时监控
+.venv/Scripts/jobpilot watch
 ```
 
-> macOS / Linux 用户:上述命令中的 `.venv/Scripts/` 对应 `.venv/bin/`,`copy` 对应 `cp`;`jobpilot` 命令也可用 `python -m jobpilot` 调用。
->
-> 需要 Python 3.11 或 3.12(3.13 暂不支持:通知组件 apprise 依赖的 `imghdr` 已被移除)。`pytest -m live` 需要可访问中转站/官方端点的稳定网络,失败会自动重试一次。
+> 需要 Python 3.11 或 3.12。详细使用说明请参考 [用户使用手册](docs/用户使用手册.md)。
 
 ## 部署(Streamlit Community Cloud)
 
