@@ -1,9 +1,17 @@
 """简历编辑页面:在线编辑个人信息和简历."""
 
-import yaml
+import sys
 from pathlib import Path
 
+import yaml
 import streamlit as st
+
+# 添加 i18n 模块路径
+_APP_DIR = Path(__file__).resolve().parent
+if str(_APP_DIR) not in sys.path:
+    sys.path.insert(0, str(_APP_DIR))
+
+from i18n import t
 
 PROFILE_FILE = Path(__file__).resolve().parents[4] / "profile.yaml"
 
@@ -25,26 +33,26 @@ def save_profile(data: dict) -> None:
 
 def render():
     """渲染简历编辑页面."""
-    st.title("📝 我的简历")
-    st.info("编辑你的个人信息和简历内容，用于职位匹配评分。")
+    st.title(t("profile_title"))
+    st.info(t("profile_info"))
 
     # 加载现有数据
     profile = load_profile()
 
     # 基础信息
-    st.header("👤 基础信息")
+    st.header(t("basic_info"))
 
     col1, col2 = st.columns(2)
 
     with col1:
         name = st.text_input(
-            "姓名",
+            t("name"),
             value=profile.get("name", ""),
-            placeholder="输入你的姓名",
+            placeholder=t("name_placeholder"),
         )
 
         years = st.number_input(
-            "工作年限",
+            t("work_years"),
             min_value=0.0,
             max_value=30.0,
             value=float(profile.get("years", 0)),
@@ -53,50 +61,29 @@ def render():
 
     with col2:
         education = st.text_input(
-            "学历",
+            t("education"),
             value=profile.get("education", ""),
-            placeholder="如：本科、硕士",
         )
 
         skills = st.text_area(
-            "技能（每行一个）",
+            t("skills"),
             value="\n".join(profile.get("skills", [])),
             height=100,
-            placeholder="Python\nJava\nReact\nSQL",
+            placeholder=t("skills_placeholder"),
         )
 
     # 简历内容
-    st.header("📄 简历内容")
+    st.header(t("resume_content"))
 
     resume_md = st.text_area(
-        "简历（Markdown 格式）",
+        t("resume_label"),
         value=profile.get("resume_md", ""),
         height=400,
-        placeholder="""# 你的名字
-
-## 教育背景
-XX大学 计算机科学与技术 本科 (2022-2026)
-
-## 技能
-- Python, Java, JavaScript
-- React, Vue.js
-- MySQL, Redis
-
-## 项目经历
-
-### 项目名称 (2024.09 - 2024.12)
-- 项目描述
-- 使用技术
-- 取得成果
-
-## 实习经历
-公司名称 职位 (2025.07 - 2025.09)
-- 工作内容
-- 取得成果""",
+        placeholder=t("resume_placeholder"),
     )
 
     # 求职意向
-    st.header("🎯 求职意向")
+    st.header(t("job_preferences"))
 
     desired = profile.get("desired", {})
 
@@ -104,33 +91,33 @@ XX大学 计算机科学与技术 本科 (2022-2026)
 
     with col1:
         roles = st.text_area(
-            "期望岗位（每行一个）",
+            t("desired_roles"),
             value="\n".join(desired.get("roles", [])),
             height=80,
-            placeholder="后端开发\n全栈开发\n软件工程师",
+            placeholder=t("desired_roles_placeholder"),
         )
 
         cities = st.text_area(
-            "期望城市（每行一个）",
+            t("desired_cities"),
             value="\n".join(desired.get("cities", [])),
             height=80,
-            placeholder="北京\n上海\n深圳\n远程",
+            placeholder=t("desired_cities_placeholder"),
         )
 
     with col2:
         remote_ok = st.checkbox(
-            "接受远程",
+            t("remote_ok"),
             value=desired.get("remote_ok", True),
         )
 
         salary_min = st.number_input(
-            "最低薪资（元/月，0 表示不限）",
+            t("salary_min"),
             min_value=0,
             value=desired.get("salary_min") or 0,
         )
 
         salary_max = st.number_input(
-            "最高薪资（元/月，0 表示不限）",
+            t("salary_max"),
             min_value=0,
             value=desired.get("salary_max") or 0,
         )
@@ -138,7 +125,7 @@ XX大学 计算机科学与技术 本科 (2022-2026)
     # 保存按钮
     st.divider()
 
-    if st.button("💾 保存简历", type="primary", use_container_width=True):
+    if st.button(t("save_profile"), type="primary", use_container_width=True):
         # 处理技能列表
         skills_list = [s.strip() for s in skills.split("\n") if s.strip()]
 
@@ -164,9 +151,9 @@ XX大学 计算机科学与技术 本科 (2022-2026)
         }
 
         save_profile(new_profile)
-        st.success("✅ 简历已保存！")
+        st.success(t("profile_saved"))
 
     # 预览
     if resume_md:
-        with st.expander("👁️ 简历预览", expanded=False):
+        with st.expander(t("resume_preview"), expanded=False):
             st.markdown(resume_md)

@@ -6,14 +6,19 @@ from pathlib import Path
 import streamlit as st
 
 _SRC = Path(__file__).resolve().parents[3]
+_APP_DIR = Path(__file__).resolve().parent
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
+if str(_APP_DIR) not in sys.path:
+    sys.path.insert(0, str(_APP_DIR))
+
+from i18n import t
 
 
 def render():
     """渲染在线评分页面."""
-    st.title("📊 在线评分")
-    st.info("粘贴职位描述（JD），立即获得匹配评分和分析。")
+    st.title(t("scoring_title"))
+    st.info(t("scoring_info"))
 
     # 检查配置
     from jobpilot.config import GatewayConfig
@@ -30,55 +35,54 @@ def render():
         return
 
     # JD 输入
-    st.header("📝 输入职位描述")
+    st.header(t("input_jd"))
 
-    tab1, tab2 = st.tabs(["粘贴文本", "上传文件"])
+    tab1, tab2 = st.tabs([t("paste_text"), t("upload_file")])
 
     jd_text = ""
 
     with tab1:
         jd_text = st.text_area(
-            "粘贴 JD 内容",
+            t("paste_jd"),
             height=300,
-            placeholder="""职位名称：后端开发实习生
+            placeholder="""Job Title: Backend Intern
 
-公司简介：
-我们是一家专注于云计算的科技公司...
+Company Description:
+We are a technology company focused on cloud computing...
 
-岗位职责：
-1. 负责后端 API 设计与开发
-2. 参与系统架构设计和优化
-3. 编写技术文档
+Responsibilities:
+1. Design and develop backend APIs
+2. Participate in system architecture design
+3. Write technical documentation
 
-任职要求：
-1. 熟悉 Python 或 Java
-2. 了解 MySQL、Redis 等数据库
-3. 有 Docker 使用经验优先
-4. 每周至少 4 天，实习 3 个月以上""",
+Requirements:
+1. Proficient in Python or Java
+2. Familiar with MySQL, Redis databases
+3. Docker experience preferred
+4. At least 4 days per week, 3+ months internship""",
         )
 
     with tab2:
         uploaded_file = st.file_uploader(
-            "上传 JD 文件",
+            t("upload_jd_file"),
             type=["md", "txt", "pdf"],
-            help="支持 Markdown、TXT 或 PDF 格式",
+            help=t("upload_help"),
         )
 
         if uploaded_file:
             if uploaded_file.type == "application/pdf":
-                st.info("PDF 文件解析中...")
-                # TODO: 集成 PDF 解析
-                st.warning("PDF 解析功能开发中，请使用文本粘贴方式。")
+                st.info("PDF parsing...")
+                st.warning("PDF parsing coming soon. Please use text paste.")
             else:
                 jd_text = uploaded_file.read().decode("utf-8")
-                st.success(f"✅ 已上传: {uploaded_file.name}")
+                st.success(f"✅ Uploaded: {uploaded_file.name}")
 
     # 评分按钮
     st.divider()
 
     if jd_text:
-        if st.button("🚀 开始评分", type="primary", use_container_width=True):
-            with st.spinner("正在分析 JD 并评分..."):
+        if st.button(t("start_scoring"), type="primary", use_container_width=True):
+            with st.spinner("Analyzing JD and scoring..."):
                 try:
                     # 加载配置和简历
                     profile = load_profile(profile_path)
@@ -99,7 +103,7 @@ def render():
                         id=JobPosting.compute_id("manual", "manual", "web_input", ""),
                         source="manual",
                         company="web_input",
-                        title="在线评分",
+                        title="Online Scoring",
                         description_md=jd_text,
                     )
                     storage.jobs.upsert(job)
@@ -113,10 +117,10 @@ def render():
                         parsed_jd=parsed_jd, job_id=job.id,
                     )
 
-                    st.success("✅ 评分完成！")
+                    st.success("✅ Scoring completed!")
 
                     # 显示结果
-                    st.header("📊 评分结果")
+                    st.header(t("scoring_result"))
 
                     # 综合分数
                     col1, col2, col3 = st.columns(3)

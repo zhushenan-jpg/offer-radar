@@ -7,30 +7,35 @@ from pathlib import Path
 import streamlit as st
 
 _SRC = Path(__file__).resolve().parents[3]
+_APP_DIR = Path(__file__).resolve().parent
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
+if str(_APP_DIR) not in sys.path:
+    sys.path.insert(0, str(_APP_DIR))
+
+from i18n import t
 
 
 def render():
     """渲染一键采集页面."""
-    st.title("🔄 一键采集")
-    st.info("从目标公司采集最新职位信息。")
+    st.title(t("collection_title"))
+    st.info(t("collection_info"))
 
     # 检查配置
     from pathlib import Path
     sources_file = Path(__file__).resolve().parents[4] / "sources.yaml"
     if not sources_file.exists():
-        st.warning("⚠️ 请先在「目标公司」页面配置要监控的公司。")
+        st.warning("⚠️ Please configure target companies first.")
         return
 
     import yaml
     sources = yaml.safe_load(sources_file.read_text(encoding="utf-8")) or []
     if not sources:
-        st.warning("⚠️ 暂未配置目标公司，请先添加。")
+        st.warning("⚠️ No target companies configured. Please add some.")
         return
 
     # 显示当前配置
-    st.header("📋 当前配置")
+    st.header(t("current_config"))
 
     import pandas as pd
     df = pd.DataFrame(sources)
@@ -39,31 +44,30 @@ def render():
     st.write(f"共配置了 **{len(sources)}** 家公司")
 
     # 采集选项
-    st.header("⚙️ 采集选项")
+    st.header(t("collection_options"))
 
     col1, col2 = st.columns(2)
 
     with col1:
         mode = st.radio(
-            "采集模式",
-            ["增量采集（仅新职位）", "全量采集（所有职位）"],
-            help="增量采集只获取新发布的职位，全量采集会更新所有职位信息",
+            "Collection Mode",
+            [t("incremental"), t("full")],
         )
 
     with col2:
         limit = st.number_input(
-            "采集数量限制",
+            t("collection_limit"),
             min_value=0,
             max_value=1000,
             value=0,
-            help="0 表示不限制",
+            help=t("collection_limit_help"),
         )
 
     # 开始采集
     st.divider()
 
-    if st.button("🚀 开始采集", type="primary", use_container_width=True):
-        with st.spinner("正在采集职位信息..."):
+    if st.button(t("start_collection"), type="primary", use_container_width=True):
+        with st.spinner("Collecting job information..."):
             try:
                 from jobpilot.pipeline import collect_all, clean_pending, SourceCfg
                 from jobpilot.storage.db import Storage
@@ -91,9 +95,9 @@ def render():
                 cleaned = clean_pending(storage)
 
                 # 显示结果
-                st.success("✅ 采集完成！")
+                st.success("✅ Collection completed!")
 
-                st.header("📊 采集结果")
+                st.header(t("collection_result"))
 
                 for source, count in summary.items():
                     if count >= 0:

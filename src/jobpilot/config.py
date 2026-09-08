@@ -1,7 +1,25 @@
 """集中配置:全部经环境变量/.env 注入,代码中不出现密钥."""
 
+import os
+
 from pydantic import AliasChoices, Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def _load_streamlit_secrets():
+    """从 Streamlit secrets 加载环境变量."""
+    try:
+        import streamlit as st
+        if hasattr(st, 'secrets'):
+            for key, value in st.secrets.items():
+                if key not in os.environ:
+                    os.environ[key] = str(value)
+    except Exception:
+        pass
+
+
+# 尝试加载 Streamlit secrets
+_load_streamlit_secrets()
 
 
 class GatewayConfig(BaseSettings):

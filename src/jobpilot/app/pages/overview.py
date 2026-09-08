@@ -7,14 +7,19 @@ from pathlib import Path
 import streamlit as st
 
 _SRC = Path(__file__).resolve().parents[3]
+_APP_DIR = Path(__file__).resolve().parent
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
+if str(_APP_DIR) not in sys.path:
+    sys.path.insert(0, str(_APP_DIR))
+
+from i18n import t
 
 
 def render():
     """渲染概览页面."""
-    st.title("🏠 OfferRadar 概览")
-    st.info("欢迎使用 OfferRadar 智能求职助手！")
+    st.title(t("overview_title"))
+    st.info(t("welcome_msg"))
 
     # 检查配置状态
     from pathlib import Path
@@ -25,7 +30,7 @@ def render():
     db_file = Path(__file__).resolve().parents[4] / "jobpilot.db"
 
     # 配置状态
-    st.header("⚙️ 配置状态")
+    st.header(t("config_status"))
 
     col1, col2, col3, col4 = st.columns(4)
 
@@ -73,14 +78,14 @@ def render():
             st.warning("⚠️ 暂无数据")
 
     # 快速开始
-    st.header("🚀 快速开始")
+    st.header(t("quick_start"))
 
-    st.markdown("""
-    1. **配置 API Key** → 访问「⚙️ 设置」页面
-    2. **编辑简历** → 访问「📝 我的简历」页面
-    3. **添加公司** → 访问「🏢 目标公司」页面
-    4. **在线评分** → 访问「📊 在线评分」页面
-    5. **查看结果** → 访问「📋 职位列表」页面
+    st.markdown(f"""
+    1. **{t("settings")}** → {t("settings_title")}
+    2. **{t("profile")}** → {t("profile_title")}
+    3. **{t("companies")}** → {t("companies_title")}
+    4. **{t("scoring")}** → {t("scoring_title")}
+    5. **{t("jobs")}** → {t("jobs_title")}
     """)
 
     # 功能介绍

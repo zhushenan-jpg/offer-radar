@@ -1,9 +1,17 @@
 """目标公司管理页面:添加/删除监控公司."""
 
-import yaml
+import sys
 from pathlib import Path
 
+import yaml
 import streamlit as st
+
+# 添加 i18n 模块路径
+_APP_DIR = Path(__file__).resolve().parent
+if str(_APP_DIR) not in sys.path:
+    sys.path.insert(0, str(_APP_DIR))
+
+from i18n import t
 
 SOURCES_FILE = Path(__file__).resolve().parents[4] / "sources.yaml"
 
@@ -25,14 +33,14 @@ def save_sources(sources: list) -> None:
 
 def render():
     """渲染目标公司管理页面."""
-    st.title("🏢 目标公司管理")
-    st.info("管理你想监控的公司，系统会自动采集这些公司的职位信息。")
+    st.title(t("companies_title"))
+    st.info(t("companies_info"))
 
     # 加载现有公司
     sources = load_sources()
 
     # 当前公司列表
-    st.header("📋 当前监控的公司")
+    st.header(t("current_companies"))
 
     if sources:
         # 表格展示
@@ -41,11 +49,11 @@ def render():
         st.dataframe(df, use_container_width=True)
 
         # 删除功能
-        st.subheader("🗑️ 删除公司")
+        st.subheader(t("delete_companies"))
         company_names = [f"{s['name']} ({s['source']})" for s in sources]
-        selected = st.multiselect("选择要删除的公司", company_names)
+        selected = st.multiselect("Select companies to delete", company_names)
 
-        if selected and st.button("删除选中公司", type="secondary"):
+        if selected and st.button("Delete selected", type="secondary"):
             indices = [company_names.index(s) for s in selected]
             new_sources = [s for i, s in enumerate(sources) if i not in indices]
             save_sources(new_sources)
@@ -56,28 +64,27 @@ def render():
 
     # 添加新公司
     st.divider()
-    st.header("➕ 添加新公司")
+    st.header(t("add_company"))
 
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        new_name = st.text_input("公司名称", placeholder="如：Stripe")
+        new_name = st.text_input(t("company_name"), placeholder=t("company_name_placeholder"))
 
     with col2:
         new_source = st.selectbox(
-            "招聘平台",
+            t("platform"),
             ["greenhouse", "lever"],
-            help="选择公司使用的招聘平台",
         )
 
     with col3:
         new_slug = st.text_input(
-            "平台标识",
-            placeholder="如：stripe",
-            help="公司在平台上的标识，通常在职位页面 URL 中可以看到",
+            t("platform_slug"),
+            placeholder=t("platform_slug_placeholder"),
+            help=t("platform_slug_help"),
         )
 
-    if st.button("➕ 添加公司", type="primary"):
+    if st.button(t("add_button"), type="primary"):
         if new_name and new_slug:
             # 检查是否已存在
             existing_slugs = [s.get("slug") for s in sources]
@@ -97,9 +104,9 @@ def render():
 
     # 批量导入
     st.divider()
-    st.header("📥 批量导入")
+    st.header(t("bulk_import"))
 
-    with st.expander("查看导入格式示例"):
+    with st.expander(t("import_format")):
         st.code("""
 # sources.yaml 格式示例
 - source: greenhouse
@@ -116,7 +123,7 @@ def render():
         """, language="yaml")
 
     bulk_text = st.text_area(
-        "批量导入（YAML 格式）",
+        t("bulk_import_text"),
         height=200,
         placeholder="""- source: greenhouse
   slug: stripe
@@ -127,7 +134,7 @@ def render():
   name: Netflix""",
     )
 
-    if st.button("📥 导入"):
+    if st.button(t("import_button")):
         if bulk_text:
             try:
                 new_sources = yaml.safe_load(bulk_text)
@@ -150,9 +157,9 @@ def render():
 
     # 常用公司推荐
     st.divider()
-    st.header("💡 推荐公司")
+    st.header(t("recommended_companies"))
 
-    st.caption("以下是一些常用的科技公司，点击即可添加：")
+    st.caption(t("recommended_desc"))
 
     recommended = [
         {"name": "Stripe", "source": "greenhouse", "slug": "stripe"},
