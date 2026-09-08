@@ -3,7 +3,10 @@
 import json
 from datetime import UTC, datetime
 
+from jobpilot.models.claim import ClaimExtractionResult
+from jobpilot.models.interview_brief import InterviewBrief
 from jobpilot.models.job import JobPosting
+from jobpilot.models.resume_patch import ResumePatch
 from jobpilot.models.score import DIMS, MatchScore
 
 LOW_CONFIDENCE_THRESHOLD = 0.6
@@ -117,10 +120,16 @@ class ScoreRepo:
         dims_dump = {k: score.dims[k].model_dump() for k in DIMS}
         evidence_flat = [ev.model_dump() for k in DIMS for ev in score.dims[k].evidence]
         review = "review" if score.confidence < LOW_CONFIDENCE_THRESHOLD else "auto"
+        claims_json = json.dumps([c.model_dump() for c in score.claims], ensure_ascii=False)
+        gaps_json = json.dumps([g.model_dump() for g in score.gaps], ensure_ascii=False)
+        evidence_matrix_json = json.dumps(
+            [e.model_dump() for e in score.evidence_matrix], ensure_ascii=False
+        )
         self.conn.execute(
             """INSERT INTO scores(job_id, overall, dims_json, evidence_json, confidence,
-                 summary, rubric_version, model_version, resume_version, review_status, created_at)
-               VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
+                 summary, rubric_version, model_version, resume_version, review_status,
+                 claims_json, gaps_json, evidence_matrix_json, created_at)
+               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             (
                 job_id,
                 score.overall,
@@ -132,6 +141,9 @@ class ScoreRepo:
                 model_version,
                 resume_version,
                 review,
+                claims_json,
+                gaps_json,
+                evidence_matrix_json,
                 _now(),
             ),
         )
@@ -142,6 +154,24 @@ class ScoreRepo:
             "SELECT * FROM scores WHERE job_id=? ORDER BY id DESC LIMIT 1", (job_id,)
         ).fetchone()
         return row
+
+    def latest_claims_for_job(self, job_id: str) -> list[dict]:
+        """获取指定职位最新的 Claim 列表."""
+        row = self.conn.execute(
+            "SELECT claims_json FROM scores WHERE job_id=? ORDER BY id DESC LIMIT 1", (job_id,)
+        ).fetchone()
+        if row and row["claims_json"]:
+            return json.loads(row["claims_json"])
+        return []
+
+    def latest_gaps_for_job(self, job_id: str) -> list[dict]:
+        """获取指定职位最新的 Gap 列表."""
+        row = self.conn.execute(
+            "SELECT gaps_json FROM scores WHERE job_id=? ORDER BY id DESC LIMIT 1", (job_id,)
+        ).fetchone()
+        if row and row["gaps_json"]:
+            return json.loads(row["gaps_json"])
+        return []
 
 
 class AnnotationRepo:
@@ -255,3 +285,157 @@ class CacheRepo:
             (key, value_json, _now()),
         )
         self.conn.commit()
+
+
+class ClaimExtractionRepo:
+    """Claim 提取结果 DAO."""
+
+    def __init__(self, conn):
+        self.conn = conn
+
+    def save(self, result: ClaimExtractionResult) -> None:
+        self.conn.execute(
+            """INSERT OR REPLACE INTO claim_extractions(id, job_id, resume_version, claims_json,
+                 gaps_json, evidence_matrix_json, extraction_tokens, extraction_cost, created_at)
+               VALUES(?,?,?,?,?,?,?,?,?)""",
+            (
+                result.id,
+                result.job_id,
+                result.resume_version,
+                json.dumps([c.model_dump() for c in result.claims], ensure_ascii=False),
+                json.dumps([g.model_dump() for g in result.gaps], ensure_ascii=False),
+                json.dumps(
+                    [e.model_dump() for e in result.evidence_matrix], ensure_ascii=False
+                ),
+                result.extraction_tokens,
+                result.extraction_cost,
+                _now(),
+            ),
+        )
+        self.conn.commit()
+
+    def get_by_job_id(self, job_id: str) -> ClaimExtractionResult | None:
+        row = self.conn.execute(
+            "SELECT * FROM claim_extractions WHERE job_id=? ORDER BY created_at DESC LIMIT 1",
+            (job_id,),
+        ).fetchone()
+        if not row:
+            return None
+        return ClaimExtractionResult(
+            id=row["id"],
+            job_id=row["job_id"],
+            resume_version=row["resume_version"],
+            claims=json.loads(row["claims_json"]),
+            gaps=json.loads(row["gaps_json"]),
+            evidence_matrix=json.loads(row["evidence_matrix_json"]),
+            extraction_tokens=row["extraction_tokens"],
+            extraction_cost=row["extraction_cost"],
+        )
+
+
+class ResumePatchRepo:
+    """简历补丁 DAO."""
+
+    def __init__(self, conn):
+        self.conn = conn
+
+    def save(self, patch: ResumePatch) -> None:
+        hr_opener_text = patch.hr_opener.opener_text if patch.hr_opener else ""
+        self.conn.execute(
+            """INSERT OR REPLACE INTO resume_patches(id, job_id, bullet_rewrites_json,
+                 missing_evidence_json, hr_opener_text, patch_markdown,
+                 generation_tokens, generation_cost, created_at)
+               VALUES(?,?,?,?,?,?,?,?,?)""",
+            (
+                patch.id,
+                patch.job_id,
+                json.dumps(
+                    [b.model_dump() for b in patch.bullet_rewrites], ensure_ascii=False
+                ),
+                json.dumps(
+                    [m.model_dump() for m in patch.missing_evidence], ensure_ascii=False
+                ),
+                hr_opener_text,
+                patch.patch_markdown,
+                patch.generation_tokens,
+                patch.generation_cost,
+                _now(),
+            ),
+        )
+        self.conn.commit()
+
+    def get_by_job_id(self, job_id: str) -> ResumePatch | None:
+        row = self.conn.execute(
+            "SELECT * FROM resume_patches WHERE job_id=? ORDER BY created_at DESC LIMIT 1",
+            (job_id,),
+        ).fetchone()
+        if not row:
+            return None
+        return ResumePatch(
+            id=row["id"],
+            job_id=row["job_id"],
+            bullet_rewrites=json.loads(row["bullet_rewrites_json"]),
+            missing_evidence=json.loads(row["missing_evidence_json"]),
+            hr_opener=None,  # 简化：不反序列化 HROpener
+            patch_markdown=row["patch_markdown"],
+            generation_tokens=row["generation_tokens"],
+            generation_cost=row["generation_cost"],
+        )
+
+
+class InterviewBriefRepo:
+    """面试速览 DAO."""
+
+    def __init__(self, conn):
+        self.conn = conn
+
+    def save(self, brief: InterviewBrief) -> None:
+        self.conn.execute(
+            """INSERT OR REPLACE INTO interview_briefs(id, job_id, company_overview, tech_stack_json,
+                 predicted_questions_json, followup_protocol_json, weak_area_drills_json,
+                 evidence_summary_json, brief_markdown, generation_tokens, generation_cost,
+                 created_at)
+               VALUES(?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (
+                brief.id,
+                brief.job_id,
+                brief.company_overview,
+                json.dumps(brief.tech_stack, ensure_ascii=False),
+                json.dumps(
+                    [q.model_dump() for q in brief.predicted_questions], ensure_ascii=False
+                ),
+                json.dumps(
+                    [f.model_dump() for f in brief.followup_protocol], ensure_ascii=False
+                ),
+                json.dumps(
+                    [d.model_dump() for d in brief.weak_area_drills], ensure_ascii=False
+                ),
+                json.dumps(brief.evidence_summary, ensure_ascii=False),
+                brief.brief_markdown,
+                brief.generation_tokens,
+                brief.generation_cost,
+                _now(),
+            ),
+        )
+        self.conn.commit()
+
+    def get_by_job_id(self, job_id: str) -> InterviewBrief | None:
+        row = self.conn.execute(
+            "SELECT * FROM interview_briefs WHERE job_id=? ORDER BY created_at DESC LIMIT 1",
+            (job_id,),
+        ).fetchone()
+        if not row:
+            return None
+        return InterviewBrief(
+            id=row["id"],
+            job_id=row["job_id"],
+            company_overview=row["company_overview"],
+            tech_stack=json.loads(row["tech_stack_json"]),
+            predicted_questions=json.loads(row["predicted_questions_json"]),
+            followup_protocol=json.loads(row["followup_protocol_json"]),
+            weak_area_drills=json.loads(row["weak_area_drills_json"]),
+            evidence_summary=json.loads(row["evidence_summary_json"]),
+            brief_markdown=row["brief_markdown"],
+            generation_tokens=row["generation_tokens"],
+            generation_cost=row["generation_cost"],
+        )

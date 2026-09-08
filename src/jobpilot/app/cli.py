@@ -73,7 +73,14 @@ def score(
     else:
         gw = _real_gateway(cfg, storage)
 
-    result = score_and_store(gw, storage, prof, jd_md, job_id=job.id)
+    # 解析 JD 结构化信息
+    from jobpilot.pipeline import parse_jd
+    parsed_jd = parse_jd(jd_md)
+
+    result = score_and_store(
+        gw, storage, prof, jd_md,
+        parsed_jd=parsed_jd, job_id=job.id
+    )
 
     table = Table(title=f"{file.name} × {prof.name}")
     table.add_column("维度")

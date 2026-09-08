@@ -1,0 +1,465 @@
+[
+  {
+    "id": "sample_001",
+    "jd_text": "我们正在寻找一名后端工程师，要求熟悉 Python，有性能优化经验，熟悉 Kubernetes 优先。",
+    "resume_text": "负责后端 API 设计与开发，使用 Python 和 Redis。将 API 响应时间从 2s 优化到 200ms，性能提升 10 倍。",
+    "expected_claims": [
+      {
+        "claim_type": "Technical",
+        "claim_text": "使用 Python 和 Redis",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Metric",
+        "claim_text": "将 API 响应时间从 2s 优化到 200ms",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Metric",
+        "claim_text": "性能提升 10 倍",
+        "strength": "strong"
+      }
+    ],
+    "expected_gaps": [
+      {
+        "gap_type": "soft_gap",
+        "jd_requirement": "熟悉 Kubernetes",
+        "mitigation": "建议补充 K8s 项目经验"
+      }
+    ]
+  },
+  {
+    "id": "sample_002",
+    "jd_text": "前端开发工程师，要求熟练掌握 React、TypeScript，有大型项目经验优先。",
+    "resume_text": "使用 React 和 TypeScript 开发企业级管理后台，支持 1000+ 用户并发。",
+    "expected_claims": [
+      {
+        "claim_type": "Technical",
+        "claim_text": "使用 React 和 TypeScript",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Metric",
+        "claim_text": "支持 1000+ 用户并发",
+        "strength": "strong"
+      }
+    ],
+    "expected_gaps": []
+  },
+  {
+    "id": "sample_003",
+    "jd_text": "数据工程师，要求熟悉 Spark、Hadoop，有数据仓库建设经验，必须有 3 年以上相关经验。",
+    "resume_text": "负责数据仓库设计与开发，使用 Spark 处理 TB 级数据。",
+    "expected_claims": [
+      {
+        "claim_type": "Technical",
+        "claim_text": "使用 Spark",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Metric",
+        "claim_text": "处理 TB 级数据",
+        "strength": "strong"
+      }
+    ],
+    "expected_gaps": [
+      {
+        "gap_type": "hard_block",
+        "jd_requirement": "必须有 3 年以上相关经验",
+        "mitigation": null
+      },
+      {
+        "gap_type": "soft_gap",
+        "jd_requirement": "熟悉 Hadoop",
+        "mitigation": "建议补充 Hadoop 相关项目"
+      }
+    ]
+  },
+  {
+    "id": "sample_004",
+    "jd_text": "全栈工程师，要求熟悉 Node.js、React、MongoDB，有微服务架构经验优先。",
+    "resume_text": "主导微服务架构设计，使用 Node.js 和 React 开发全栈应用，MongoDB 存储用户数据。",
+    "expected_claims": [
+      {
+        "claim_type": "Architecture",
+        "claim_text": "主导微服务架构设计",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Technical",
+        "claim_text": "使用 Node.js 和 React",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Technical",
+        "claim_text": "MongoDB 存储用户数据",
+        "strength": "strong"
+      }
+    ],
+    "expected_gaps": []
+  },
+  {
+    "id": "sample_005",
+    "jd_text": "DevOps 工程师，要求熟悉 Docker、Kubernetes、CI/CD，有自动化运维经验。",
+    "resume_text": "负责 CI/CD 流水线搭建，使用 Docker 容器化应用。",
+    "expected_claims": [
+      {
+        "claim_type": "Technical",
+        "claim_text": "使用 Docker",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Ownership",
+        "claim_text": "负责 CI/CD 流水线搭建",
+        "strength": "strong"
+      }
+    ],
+    "expected_gaps": [
+      {
+        "gap_type": "soft_gap",
+        "jd_requirement": "熟悉 Kubernetes",
+        "mitigation": "建议补充 K8s 部署经验"
+      }
+    ]
+  },
+  {
+    "id": "sample_006",
+    "jd_text": "算法工程师，要求熟悉机器学习、深度学习，有 NLP 项目经验优先。",
+    "resume_text": "熟练掌握机器学习算法，有丰富的深度学习经验。",
+    "expected_claims": [
+      {
+        "claim_type": "Technical",
+        "claim_text": "熟练掌握机器学习算法",
+        "strength": "weak"
+      },
+      {
+        "claim_type": "Technical",
+        "claim_text": "有丰富的深度学习经验",
+        "strength": "weak"
+      }
+    ],
+    "expected_gaps": [
+      {
+        "gap_type": "soft_gap",
+        "jd_requirement": "有 NLP 项目经验",
+        "mitigation": "建议补充 NLP 相关项目"
+      }
+    ]
+  },
+  {
+    "id": "sample_007",
+    "jd_text": "测试工程师，要求熟悉自动化测试、性能测试，有 Selenium 经验优先。",
+    "resume_text": "负责自动化测试框架搭建，使用 Selenium 编写测试用例，执行性能测试。",
+    "expected_claims": [
+      {
+        "claim_type": "Ownership",
+        "claim_text": "负责自动化测试框架搭建",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Technical",
+        "claim_text": "使用 Selenium 编写测试用例",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Technical",
+        "claim_text": "执行性能测试",
+        "strength": "strong"
+      }
+    ],
+    "expected_gaps": []
+  },
+  {
+    "id": "sample_008",
+    "jd_text": "产品经理，要求有 B 端产品经验，熟悉 SQL，有数据分析能力。",
+    "resume_text": "负责 B 端产品规划与设计，推动产品从 0 到 1。",
+    "expected_claims": [
+      {
+        "claim_type": "Ownership",
+        "claim_text": "负责 B 端产品规划与设计",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Result",
+        "claim_text": "推动产品从 0 到 1",
+        "strength": "strong"
+      }
+    ],
+    "expected_gaps": [
+      {
+        "gap_type": "soft_gap",
+        "jd_requirement": "熟悉 SQL",
+        "mitigation": "建议补充 SQL 技能"
+      },
+      {
+        "gap_type": "soft_gap",
+        "jd_requirement": "有数据分析能力",
+        "mitigation": "建议展示数据分析项目"
+      }
+    ]
+  },
+  {
+    "id": "sample_009",
+    "jd_text": "安全工程师，要求熟悉 Web 安全、渗透测试，有安全审计经验。",
+    "resume_text": "负责公司安全体系建设，进行渗透测试和安全审计。",
+    "expected_claims": [
+      {
+        "claim_type": "Ownership",
+        "claim_text": "负责公司安全体系建设",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Technical",
+        "claim_text": "进行渗透测试和安全审计",
+        "strength": "strong"
+      }
+    ],
+    "expected_gaps": []
+  },
+  {
+    "id": "sample_010",
+    "jd_text": "移动开发工程师，要求熟悉 Flutter 或 React Native，有 iOS/Android 开发经验。",
+    "resume_text": "使用 Flutter 开发跨平台移动应用，发布到 App Store 和 Google Play。",
+    "expected_claims": [
+      {
+        "claim_type": "Technical",
+        "claim_text": "使用 Flutter 开发跨平台移动应用",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Result",
+        "claim_text": "发布到 App Store 和 Google Play",
+        "strength": "strong"
+      }
+    ],
+    "expected_gaps": []
+  },
+  {
+    "id": "sample_011",
+    "jd_text": "后端开发，要求熟悉 Go 语言，有高并发系统设计经验，了解分布式系统。",
+    "resume_text": "使用 Go 开发高并发服务，QPS 达到 10 万。",
+    "expected_claims": [
+      {
+        "claim_type": "Technical",
+        "claim_text": "使用 Go 开发高并发服务",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Metric",
+        "claim_text": "QPS 达到 10 万",
+        "strength": "strong"
+      }
+    ],
+    "expected_gaps": [
+      {
+        "gap_type": "soft_gap",
+        "jd_requirement": "了解分布式系统",
+        "mitigation": "建议补充分布式系统经验"
+      }
+    ]
+  },
+  {
+    "id": "sample_012",
+    "jd_text": "数据分析师，要求熟练使用 SQL、Python，有数据可视化经验，熟悉 Tableau 优先。",
+    "resume_text": "使用 Python 进行数据分析，SQL 查询数据，制作数据报告。",
+    "expected_claims": [
+      {
+        "claim_type": "Technical",
+        "claim_text": "使用 Python 进行数据分析",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Technical",
+        "claim_text": "SQL 查询数据",
+        "strength": "strong"
+      }
+    ],
+    "expected_gaps": [
+      {
+        "gap_type": "soft_gap",
+        "jd_requirement": "有数据可视化经验",
+        "mitigation": "建议补充数据可视化项目"
+      },
+      {
+        "gap_type": "soft_gap",
+        "jd_requirement": "熟悉 Tableau",
+        "mitigation": "建议学习 Tableau"
+      }
+    ]
+  },
+  {
+    "id": "sample_013",
+    "jd_text": "前端开发，要求熟悉 Vue.js，有移动端 H5 开发经验，了解小程序开发。",
+    "resume_text": "使用 Vue.js 开发移动端 H5 页面，适配多种屏幕尺寸。",
+    "expected_claims": [
+      {
+        "claim_type": "Technical",
+        "claim_text": "使用 Vue.js 开发移动端 H5 页面",
+        "strength": "strong"
+      }
+    ],
+    "expected_gaps": [
+      {
+        "gap_type": "soft_gap",
+        "jd_requirement": "了解小程序开发",
+        "mitigation": "建议补充小程序开发经验"
+      }
+    ]
+  },
+  {
+    "id": "sample_014",
+    "jd_text": "运维工程师，要求熟悉 Linux、Shell 脚本，有监控系统搭建经验。",
+    "resume_text": "负责 Linux 服务器运维，编写 Shell 脚本自动化运维任务。",
+    "expected_claims": [
+      {
+        "claim_type": "Ownership",
+        "claim_text": "负责 Linux 服务器运维",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Technical",
+        "claim_text": "编写 Shell 脚本自动化运维任务",
+        "strength": "strong"
+      }
+    ],
+    "expected_gaps": [
+      {
+        "gap_type": "soft_gap",
+        "jd_requirement": "有监控系统搭建经验",
+        "mitigation": "建议补充监控系统搭建经验"
+      }
+    ]
+  },
+  {
+    "id": "sample_015",
+    "jd_text": "Java 开发工程师，要求熟悉 Spring Boot、微服务，有大型项目经验。",
+    "resume_text": "使用 Spring Boot 开发微服务架构，支持百万级用户。",
+    "expected_claims": [
+      {
+        "claim_type": "Technical",
+        "claim_text": "使用 Spring Boot 开发微服务架构",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Metric",
+        "claim_text": "支持百万级用户",
+        "strength": "strong"
+      }
+    ],
+    "expected_gaps": []
+  },
+  {
+    "id": "sample_016",
+    "jd_text": "UI 设计师，要求熟练使用 Figma，有设计系统搭建经验，了解前端开发。",
+    "resume_text": "使用 Figma 进行 UI 设计，搭建公司设计系统。",
+    "expected_claims": [
+      {
+        "claim_type": "Technical",
+        "claim_text": "使用 Figma 进行 UI 设计",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Result",
+        "claim_text": "搭建公司设计系统",
+        "strength": "strong"
+      }
+    ],
+    "expected_gaps": [
+      {
+        "gap_type": "soft_gap",
+        "jd_requirement": "了解前端开发",
+        "mitigation": "建议了解前端基础知识"
+      }
+    ]
+  },
+  {
+    "id": "sample_017",
+    "jd_text": "数据库管理员，要求熟悉 MySQL、Redis，有数据库优化经验，了解 PostgreSQL 优先。",
+    "resume_text": "负责 MySQL 数据库管理与优化，Redis 缓存设计。",
+    "expected_claims": [
+      {
+        "claim_type": "Ownership",
+        "claim_text": "负责 MySQL 数据库管理与优化",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Technical",
+        "claim_text": "Redis 缓存设计",
+        "strength": "strong"
+      }
+    ],
+    "expected_gaps": [
+      {
+        "gap_type": "soft_gap",
+        "jd_requirement": "了解 PostgreSQL",
+        "mitigation": "建议学习 PostgreSQL"
+      }
+    ]
+  },
+  {
+    "id": "sample_018",
+    "jd_text": "机器学习工程师，要求熟悉 TensorFlow 或 PyTorch，有模型部署经验。",
+    "resume_text": "使用 TensorFlow 训练深度学习模型，部署到生产环境。",
+    "expected_claims": [
+      {
+        "claim_type": "Technical",
+        "claim_text": "使用 TensorFlow 训练深度学习模型",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Result",
+        "claim_text": "部署到生产环境",
+        "strength": "strong"
+      }
+    ],
+    "expected_gaps": []
+  },
+  {
+    "id": "sample_019",
+    "jd_text": "iOS 开发工程师，要求熟悉 Swift，有 App Store 上架经验，了解 SwiftUI 优先。",
+    "resume_text": "使用 Swift 开发 iOS 应用，成功上架 App Store。",
+    "expected_claims": [
+      {
+        "claim_type": "Technical",
+        "claim_text": "使用 Swift 开发 iOS 应用",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Result",
+        "claim_text": "成功上架 App Store",
+        "strength": "strong"
+      }
+    ],
+    "expected_gaps": [
+      {
+        "gap_type": "soft_gap",
+        "jd_requirement": "了解 SwiftUI",
+        "mitigation": "建议学习 SwiftUI"
+      }
+    ]
+  },
+  {
+    "id": "sample_020",
+    "jd_text": "Android 开发工程师，要求熟悉 Kotlin，有性能优化经验，了解 Jetpack Compose。",
+    "resume_text": "使用 Kotlin 开发 Android 应用，优化应用启动时间减少 50%。",
+    "expected_claims": [
+      {
+        "claim_type": "Technical",
+        "claim_text": "使用 Kotlin 开发 Android 应用",
+        "strength": "strong"
+      },
+      {
+        "claim_type": "Metric",
+        "claim_text": "优化应用启动时间减少 50%",
+        "strength": "strong"
+      }
+    ],
+    "expected_gaps": [
+      {
+        "gap_type": "soft_gap",
+        "jd_requirement": "了解 Jetpack Compose",
+        "mitigation": "建议学习 Jetpack Compose"
+      }
+    ]
+  }
+]

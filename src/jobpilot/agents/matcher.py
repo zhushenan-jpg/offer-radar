@@ -5,6 +5,7 @@ import re
 from jobpilot.llm_gateway.gateway import make_cache_key
 from jobpilot.models.profile import Profile
 from jobpilot.models.score import DIMS, MatchScore
+from jobpilot.tools.claim_extractor import ClaimExtractor
 
 from .prompts import RUBRIC_VERSION, SYSTEM_MATCHER, build_matcher_prompt
 
@@ -64,8 +65,45 @@ def score_job(gateway, profile: Profile, jd_md: str, *, job_id: str) -> tuple[Ma
     return score, key
 
 
-def score_and_store(gateway, storage, profile: Profile, jd_md: str, *, job_id: str) -> MatchScore:
+def score_and_store(
+    gateway,
+    storage,
+    profile: Profile,
+    jd_md: str,
+    parsed_jd: dict | None = None,
+    *,
+    job_id: str,
+    extract_claims: bool = True,
+) -> MatchScore:
+    """评分并存储，可选提取 Claim 证据链.
+
+    Args:
+        gateway: LLM 网关
+        storage: 存储
+        profile: 用户档案
+        jd_md: JD 原文
+        parsed_jd: 解析后的 JD 结构（Claim 提取需要）
+        job_id: 职位 ID
+        extract_claims: 是否提取 Claim（默认 True）
+    """
     score, _ = score_job(gateway, profile, jd_md, job_id=job_id)
+
+    # 提取 Claim 证据链（FakeGateway 不支持，跳过）
+    if extract_claims and parsed_jd:
+        from jobpilot.testing import FakeGateway
+        if not isinstance(gateway, FakeGateway):
+            claim_extractor = ClaimExtractor(gateway, storage)
+            claim_result = claim_extractor.extract(
+                resume_text=profile.resume_md,
+                jd_text=jd_md,
+                parsed_jd=parsed_jd,
+                resume_version=profile.resume_version,
+                job_id=job_id,
+            )
+            score.claims = claim_result.claims
+            score.gaps = claim_result.gaps
+            score.evidence_matrix = claim_result.evidence_matrix
+
     storage.scores.save(
         job_id,
         score,

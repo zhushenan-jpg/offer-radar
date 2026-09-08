@@ -2,33 +2,81 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
+    branches: [main]
 
 jobs:
   test:
+    name: 测试
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
 
-      - uses: actions/setup-python@v5
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
           cache: pip
 
-      - name: Install dependencies
+      - name: 安装依赖
         run: pip install -e ".[dev,m2,m3]"
 
-      - name: Lint (ruff)
-        run: ruff check .
+      - name: 代码检查 (Ruff)
+        run: |
+          ruff check src/ tests/
+          ruff format --check src/ tests/
 
-      - name: Test (mocked, live tests excluded)
-        run: pytest -m "not live"
+      - name: 单元测试
+        run: pytest tests/unit/ -v --cov=jobpilot --cov-report=xml
 
-      - name: Upload eval report artifact
+      - name: 集成测试
+        run: pytest tests/integration/ -v
+
+      - name: 人工评测
+        run: pytest tests/eval/ -v -s
+
+      - name: 其他测试 (排除 live)
+        run: pytest -m "not live" --ignore=tests/unit --ignore=tests/integration --ignore=tests/eval
+
+      - name: 上传测试报告
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: eval-report
-          path: docs/eval-report.md
-          if-no-files-found: ignore
+          name: test-report-${{ matrix.python-version }}
+          path: coverage.xml
+
+  build:
+    name: 构建 Docker 镜像
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 登录 Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: 构建并推送镜像
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/offer-radar:latest
+            ${{ secrets.DOCKER_USERNAME }}/offer-radar:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

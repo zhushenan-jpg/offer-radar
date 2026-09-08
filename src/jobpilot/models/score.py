@@ -1,8 +1,10 @@
 """匹配评分模型:overall 由代码按权重重算,不信任模型自报."""
 
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field, model_validator
+
+from jobpilot.models.claim import Claim, EvidenceMatrix, Gap
 
 DimKey = Literal["skills", "experience", "constraints", "growth"]
 DIMS: tuple[DimKey, ...] = ("skills", "experience", "constraints", "growth")
@@ -35,6 +37,12 @@ class MatchScore(BaseModel):
     dims: dict[DimKey, DimScore]
     confidence: float = Field(ge=0, le=1)
     summary: str = Field(min_length=1, max_length=200)
+    # 扩展字段:Claim 证据链
+    claims: list[Claim] = Field(default_factory=list, description="从简历提取的可验证声明")
+    gaps: list[Gap] = Field(default_factory=list, description="JD 要求与简历的差距")
+    evidence_matrix: list[EvidenceMatrix] = Field(
+        default_factory=list, description="Claim 与 JD 要求的映射关系"
+    )
 
     @model_validator(mode="after")
     def _recompute_overall(self) -> "MatchScore":

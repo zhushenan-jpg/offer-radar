@@ -40,7 +40,8 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = ["live: real API calls, skipped by default"]
-addopts = "-q"
+# 默认排除 live 测试(真实 API 调用);显式 pytest -m live 时命令行参数会覆盖此项
+addopts = "-q -m 'not live'"
 filterwarnings = [
     # apprise 内部为兼容 Python 3.13 保留的 imghdr 导入,非本项目代码问题
     "ignore::DeprecationWarning:apprise.*",

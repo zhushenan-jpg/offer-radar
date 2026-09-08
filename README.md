@@ -67,12 +67,98 @@ cp profile.example.yaml profile.yaml
 2. 仓库推送到 GitHub;
 3. [share.streamlit.io](https://share.streamlit.io) → New app → 选仓库,Main file 填 `src/jobpilot/app/dashboard.py`。
 
+## 扩展技能 (M5-M7)
+
+基于 ASu-skills 设计，新增三个 MVP 扩展技能：
+
+### Claim Evidence Extractor (证据链提取器)
+
+从简历中提取可验证声明（Claim），与 JD 要求进行匹配，识别差距。
+
+```python
+from jobpilot.tools.claim_extractor import ClaimExtractor
+
+extractor = ClaimExtractor(gateway, storage)
+result = extractor.extract(
+    resume_text="负责后端开发，将 API 响应时间从 2s 优化到 200ms",
+    jd_text="要求有性能优化经验",
+    parsed_jd={"skills": ["Python"]},
+    resume_version="v1.0",
+    job_id="job_001",
+)
+# result.claims: 提取的 Claim 列表
+# result.gaps: 识别的 Gap 列表
+```
+
+### Gap Advisor (简历差距顾问)
+
+针对高分但证据不足的职位，生成具体的简历修改建议和 HR 开场白。
+
+```python
+from jobpilot.tools.gap_advisor import GapAdvisor
+
+advisor = GapAdvisor(gateway, storage)
+patch = advisor.generate_patch(
+    resume_text="负责后端开发",
+    job_posting_summary="要求有后端开发经验",
+    claims=[...],
+    gaps=[...],
+    job_id="job_001",
+)
+# patch.bullet_rewrites: 改写建议
+# patch.hr_opener: HR 开场白
+# patch.patch_markdown: 可合并的增量内容
+```
+
+### Interview Prep Generator (面试预测器)
+
+高分职位自动生成面试准备材料。
+
+```python
+from jobpilot.tools.interview_prep import InterviewPrep
+
+prep = InterviewPrep(gateway, storage)
+brief = prep.generate_brief(
+    job_posting_summary="要求熟悉 Python 和微服务",
+    company_research="这是一家技术公司...",
+    claims=[...],
+    gaps=[...],
+    resume_text="负责后端开发",
+    job_id="job_001",
+)
+# brief.predicted_questions: 预测问题
+# brief.followup_protocol: 追问协议
+# brief.brief_markdown: 一页纸面试速览
+```
+
+### 监控面板
+
+```bash
+# 启动监控面板
+streamlit run src/jobpilot/app/monitoring.py
+```
+
+### 邮件告警配置
+
+```bash
+# .env 文件
+ALERT_EMAIL_ENABLED=true
+ALERT_SMTP_HOST=smtp.gmail.com
+ALERT_SMTP_PORT=587
+ALERT_SMTP_USER=your-email@gmail.com
+ALERT_SMTP_PASS=your-password
+ALERT_RECIPIENTS=recipient@example.com
+```
+
 ## 当前状态
 
 - [x] M1:包骨架、数据模型、SQLite 存储、LLM 网关(缓存/计量/预算)、Rubric v1 评分、CLI
 - [x] M2:ATS 采集器(Greenhouse/Lever)+ JD 清洗 + 去重 + crewAI 编排 + Markdown 周报(`jobpilot report`)
 - [x] M3:评测台(Spearman/MAE/Top-k/校准)+ 成本统计 + Streamlit 面板 + 部署物
 - [x] M4:定时监控(`jobpilot watch`,错峰跑批 + 高分推送 + 预算巡检)+ PDF 简历解析(`parse-resume`)+ browser-use 兜底采集器(可选依赖)
+- [x] M5:Claim Evidence Extractor - 证据链提取器
+- [x] M6:Gap Advisor - 简历差距顾问
+- [x] M7:Interview Prep Generator - 面试预测器
 
 ## 周报示例
 

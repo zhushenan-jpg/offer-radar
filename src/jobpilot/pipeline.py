@@ -86,6 +86,38 @@ def clean_pending(storage) -> int:
     return n
 
 
+def parse_jd(jd_md: str) -> dict:
+    """简单 JD 解析:提取技能、要求等结构化信息."""
+    import re
+
+    # 提取技能关键词
+    skill_patterns = [
+        r"Python|Java|JavaScript|TypeScript|React|Vue|Angular|Node\.js",
+        r"SQL|MySQL|PostgreSQL|Redis|MongoDB|Docker|Kubernetes|AWS|Azure|GCP",
+        r"Git|Linux|Shell|Bash|CI/CD|Jenkins|GitHub Actions",
+        r"FastAPI|Django|Flask|Spring Boot|Express",
+        r"机器学习|深度学习|TensorFlow|PyTorch|NLP",
+    ]
+
+    skills = []
+    for pattern in skill_patterns:
+        matches = re.findall(pattern, jd_md, re.IGNORECASE)
+        skills.extend(matches)
+
+    # 提取要求
+    requirements = []
+    lines = jd_md.split("\n")
+    for line in lines:
+        if any(kw in line for kw in ["要求", "必须", "需要", "必备", "熟悉", "掌握"]):
+            requirements.append(line.strip())
+
+    return {
+        "skills": list(set(skills)),
+        "requirements": requirements,
+        "raw_text": jd_md,
+    }
+
+
 def score_pending(storage, profile, gateway, limit: int | None = None) -> int:
     """对 status=parsed 的职位逐条评分(走网关),流转到 scored;返回处理条数."""
     from jobpilot.agents.matcher import score_and_store
@@ -95,7 +127,11 @@ def score_pending(storage, profile, gateway, limit: int | None = None) -> int:
         ids = ids[:limit]
     for job_id in ids:
         clean_md = storage.jobs.get_clean(job_id) or (storage.jobs.get(job_id).description_md)
-        score_and_store(gateway, storage, profile, clean_md, job_id=job_id)
+        parsed_jd = parse_jd(clean_md)
+        score_and_store(
+            gateway, storage, profile, clean_md,
+            parsed_jd=parsed_jd, job_id=job_id
+        )
         storage.jobs.update_status(job_id, "scored")
     return len(ids)
 
