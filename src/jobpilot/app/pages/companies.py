@@ -51,16 +51,16 @@ def render():
         # 删除功能
         st.subheader(t("delete_companies"))
         company_names = [f"{s['name']} ({s['source']})" for s in sources]
-        selected = st.multiselect("Select companies to delete", company_names)
+        selected = st.multiselect(t("select_companies_delete"), company_names)
 
-        if selected and st.button("Delete selected", type="secondary"):
+        if selected and st.button(t("delete_selected"), type="secondary"):
             indices = [company_names.index(s) for s in selected]
             new_sources = [s for i, s in enumerate(sources) if i not in indices]
             save_sources(new_sources)
-            st.success(f"✅ 已删除 {len(selected)} 个公司")
+            st.success(t("deleted_count").format(count=len(selected)))
             st.rerun()
     else:
-        st.warning("⚠️ 暂未配置目标公司，请在下方添加。")
+        st.warning(t("no_companies_warning"))
 
     # 添加新公司
     st.divider()
@@ -89,7 +89,7 @@ def render():
             # 检查是否已存在
             existing_slugs = [s.get("slug") for s in sources]
             if new_slug in existing_slugs:
-                st.warning(f"⚠️ 公司 {new_slug} 已存在")
+                st.warning(t("company_exists").format(slug=new_slug))
             else:
                 sources.append({
                     "source": new_source,
@@ -97,10 +97,10 @@ def render():
                     "name": new_name,
                 })
                 save_sources(sources)
-                st.success(f"✅ 已添加 {new_name}")
+                st.success(t("company_added").format(name=new_name))
                 st.rerun()
         else:
-            st.warning("⚠️ 请填写公司名称和平台标识")
+            st.warning(t("fill_required"))
 
     # 批量导入
     st.divider()
@@ -148,12 +148,12 @@ def render():
                             existing_slugs.append(s.get("slug"))
                             added += 1
                     save_sources(sources)
-                    st.success(f"✅ 成功导入 {added} 个新公司")
+                    st.success(t("import_success").format(count=added))
                     st.rerun()
                 else:
-                    st.error("❌ 格式错误，请使用 YAML 列表格式")
+                    st.error(t("import_format_error"))
             except Exception as e:
-                st.error(f"❌ 导入失败: {e}")
+                st.error(t("import_failed").format(error=e))
 
     # 常用公司推荐
     st.divider()
@@ -187,5 +187,5 @@ def render():
                 ):
                     sources.append(company)
                     save_sources(sources)
-                    st.success(f"✅ 已添加 {company['name']}")
+                    st.success(t("company_added").format(name=company["name"]))
                     st.rerun()

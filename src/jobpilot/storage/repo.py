@@ -155,6 +155,41 @@ class ScoreRepo:
         ).fetchone()
         return row
 
+    def update_review_status(self, job_id: str, status: str) -> None:
+        """更新最新评分的审核状态.
+
+        Args:
+            job_id: 职位 ID
+            status: 新状态，可选值: auto(自动通过), review(待审核), approved(人工确认), rejected(人工拒绝)
+        """
+        self.conn.execute(
+            """UPDATE scores SET review_status=? WHERE id=(
+                SELECT id FROM scores WHERE job_id=? ORDER BY id DESC LIMIT 1
+            )""",
+            (status, job_id),
+        )
+        self.conn.commit()
+
+    def pending_review(self) -> list[dict]:
+        """获取所有待审核的评分(confidence < 阈值)."""
+        rows = self.conn.execute(
+            """SELECT j.id AS job_id, j.company, j.title, j.url, j.location,
+                      s.overall, s.dims_json, s.confidence, s.summary, s.review_status,
+                      s.evidence_json, s.claims_json, s.gaps_json
+               FROM jobs j JOIN scores s ON s.job_id = j.id
+               WHERE s.review_status = 'review'
+                 AND s.id = (SELECT MAX(id) FROM scores WHERE job_id = j.id)
+               ORDER BY s.confidence ASC"""
+        ).fetchall()
+        out = []
+        for r in rows:
+            d = dict(r)
+            d["dims"] = json.loads(d.pop("dims_json"))
+            d["claims"] = json.loads(d.pop("claims_json", "[]") or "[]")
+            d["gaps"] = json.loads(d.pop("gaps_json", "[]") or "[]")
+            out.append(d)
+        return out
+
     def latest_claims_for_job(self, job_id: str) -> list[dict]:
         """获取指定职位最新的 Claim 列表."""
         row = self.conn.execute(

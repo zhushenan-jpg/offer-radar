@@ -25,7 +25,7 @@ def render():
     # 加载数据
     db_path = Path(os.environ.get("JOBPLOT_DB", "jobpilot.db"))
     if not db_path.exists():
-        st.warning("⚠️ 暂无数据，请先采集职位。")
+        st.warning(t("no_jobs_warning"))
         return
 
     from jobpilot.storage.db import Storage
@@ -50,6 +50,36 @@ def render():
     with col3:
         avg_score = sum(r["overall"] for r in rows) / len(rows)
         st.metric(t("avg_score"), f"{avg_score:.1f}")
+
+    # 数据导出
+    import csv
+    import io
+
+    export_data = []
+    for r in rows:
+        export_data.append({
+            "company": r["company"],
+            "title": r["title"],
+            "location": r.get("location", ""),
+            "overall": r["overall"],
+            "confidence": r["confidence"],
+            "url": r.get("url", ""),
+            "summary": r.get("summary", ""),
+        })
+
+    csv_buffer = io.StringIO()
+    writer = csv.DictWriter(csv_buffer, fieldnames=export_data[0].keys())
+    writer.writeheader()
+    writer.writerows(export_data)
+
+    st.download_button(
+        label=t("export_csv"),
+        data=csv_buffer.getvalue(),
+        file_name="offer_radar_jobs.csv",
+        mime="text/csv",
+    )
+
+    st.divider()
 
     # 筛选
     st.header(t("filter"))
@@ -78,11 +108,11 @@ def render():
         df_data = []
         for r in filtered:
             df_data.append({
-                "分数": r["overall"],
-                "公司": r["company"],
-                "职位": r["title"],
-                "地点": r.get("location", ""),
-                "置信度": f"{r['confidence']:.0%}",
+                t("col_score"): r["overall"],
+                t("col_company"): r["company"],
+                t("col_title"): r["title"],
+                t("col_location"): r.get("location", ""),
+                t("col_confidence"): f"{r['confidence']:.0%}",
             })
 
         df = pd.DataFrame(df_data)
@@ -109,7 +139,7 @@ def render():
                 st.write(f"**{t('confidence')}**: {job['confidence']:.0%}")
 
             # 维度评分
-            st.subheader("维度评分")
+            st.subheader(t("dim_scores"))
             dims = job.get("dims", {})
             for dim, data in dims.items():
                 st.write(f"**{dim}**: {data['score']}/10")
@@ -117,11 +147,11 @@ def render():
                     st.caption(f"  📝 {ev['quote']}")
 
             # 总结
-            st.subheader("总结")
+            st.subheader(t("summary_header"))
             st.write(job.get("summary", ""))
 
             # 链接
             if job.get("url"):
-                st.link_button("🔗 查看原始职位", job["url"])
+                st.link_button(t("view_original"), job["url"])
     else:
-        st.info("没有找到匹配的职位。")
+        st.info(t("no_match_jobs"))

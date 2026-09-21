@@ -118,8 +118,12 @@ def parse_jd(jd_md: str) -> dict:
     }
 
 
-def score_pending(storage, profile, gateway, limit: int | None = None) -> int:
-    """对 status=parsed 的职位逐条评分(走网关),流转到 scored;返回处理条数."""
+def score_pending(storage, profile, gateway, limit: int | None = None, use_llm_parser: bool = False) -> int:
+    """对 status=parsed 的职位逐条评分(走网关),流转到 scored;返回处理条数.
+
+    Args:
+        use_llm_parser: 是否使用 LLM 解析 JD（更精准但有 API 成本），默认 regex
+    """
     from jobpilot.agents.matcher import score_and_store
 
     ids = storage.jobs.ids_by_status("parsed")
@@ -127,7 +131,11 @@ def score_pending(storage, profile, gateway, limit: int | None = None) -> int:
         ids = ids[:limit]
     for job_id in ids:
         clean_md = storage.jobs.get_clean(job_id) or (storage.jobs.get(job_id).description_md)
-        parsed_jd = parse_jd(clean_md)
+        if use_llm_parser:
+            from jobpilot.agents.parser import parse_jd_with_fallback
+            parsed_jd = parse_jd_with_fallback(gateway, clean_md, job_id)
+        else:
+            parsed_jd = parse_jd(clean_md)
         score_and_store(
             gateway, storage, profile, clean_md,
             parsed_jd=parsed_jd, job_id=job_id

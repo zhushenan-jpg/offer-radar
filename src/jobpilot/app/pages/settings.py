@@ -11,9 +11,44 @@ _APP_DIR = Path(__file__).resolve().parent
 if str(_APP_DIR) not in sys.path:
     sys.path.insert(0, str(_APP_DIR))
 
-from i18n import t
+from i18n import t, get_language
 
 ENV_FILE = Path(__file__).resolve().parents[4] / ".env"
+
+
+def validate_api_key(base_url: str, api_key: str, model: str) -> tuple[bool, str]:
+    """验证 API Key 是否有效.
+
+    通过调用 models.list() 接口验证 key 和 endpoint 的连通性.
+    不消耗 token,超时设为 15 秒.
+
+    Args:
+        base_url: API 端点地址
+        api_key: API 密钥
+        model: 模型名称(此函数中未使用,保留供未来扩展)
+
+    Returns:
+        tuple[bool, str]: (是否有效, 错误信息). 有效时错误信息为空字符串.
+    """
+    if not api_key:
+        return False, "API Key 为空"
+    try:
+        from openai import OpenAI
+        client = OpenAI(base_url=base_url, api_key=api_key, timeout=15.0)
+        # 尝试列出模型(轻量请求,不消耗 token)
+        models = client.models.list()
+        return True, ""
+    except Exception as e:
+        err = str(e)
+        # 提取关键错误信息
+        if "401" in err or "invalid" in err.lower() or "auth" in err.lower():
+            return False, "API Key 无效或已过期"
+        elif "403" in err or "forbidden" in err.lower():
+            return False, "API Key 权限不足"
+        elif "timeout" in err.lower() or "connect" in err.lower():
+            return False, "无法连接到 API 服务器，请检查网络和地址"
+        else:
+            return False, f"验证失败: {err[:200]}"
 
 
 def load_env() -> dict:
@@ -138,25 +173,32 @@ def render():
     st.divider()
 
     if st.button(t("save_config"), type="primary", use_container_width=True):
-        new_config = {
-            "ZHIPU_API_KEY": api_key,
-            "OPENAI_BASE_URL": base_url,
-            "JOBPLOT_MODEL": model,
-            "JOBPLOT_MONTHLY_BUDGET_CNY": str(budget),
-        }
+        # 先验证 API Key 有效性
+        with st.spinner(t("validating_api_key")):
+            is_valid, err_msg = validate_api_key(base_url, api_key, model)
 
-        if notify_enabled:
-            new_config["ALERT_EMAIL_ENABLED"] = "true"
-            new_config["ALERT_SMTP_HOST"] = smtp_host
-            new_config["ALERT_SMTP_PORT"] = str(smtp_port)
-            new_config["ALERT_SMTP_USER"] = smtp_user
-            new_config["ALERT_SMTP_PASS"] = smtp_pass
-            new_config["ALERT_RECIPIENTS"] = recipients
+        if not is_valid:
+            st.error(t("api_key_invalid").format(error=err_msg))
         else:
-            new_config["ALERT_EMAIL_ENABLED"] = "false"
+            new_config = {
+                "ZHIPU_API_KEY": api_key,
+                "OPENAI_BASE_URL": base_url,
+                "JOBPLOT_MODEL": model,
+                "JOBPLOT_MONTHLY_BUDGET_CNY": str(budget),
+            }
 
-        save_env(new_config)
-        st.success(t("config_saved"))
+            if notify_enabled:
+                new_config["ALERT_EMAIL_ENABLED"] = "true"
+                new_config["ALERT_SMTP_HOST"] = smtp_host
+                new_config["ALERT_SMTP_PORT"] = str(smtp_port)
+                new_config["ALERT_SMTP_USER"] = smtp_user
+                new_config["ALERT_SMTP_PASS"] = smtp_pass
+                new_config["ALERT_RECIPIENTS"] = recipients
+            else:
+                new_config["ALERT_EMAIL_ENABLED"] = "false"
+
+            save_env(new_config)
+            st.success(t("config_saved"))
 
     # 配置状态检查
     st.divider()
@@ -166,18 +208,18 @@ def render():
 
     with col1:
         if api_key:
-            st.success("✅ API Key 已配置")
+            st.success(t("api_key_status_ok"))
         else:
-            st.error("❌ API Key 未配置")
+            st.error(t("api_key_status_missing"))
 
     with col2:
         if base_url:
-            st.success("✅ API 地址已配置")
+            st.success(t("api_url_status_ok"))
         else:
-            st.warning("⚠️ 使用默认地址")
+            st.warning(t("api_url_status_default"))
 
     with col3:
         if budget > 0:
-            st.success(f"✅ 预算: ¥{budget}/月")
+            st.success(t("budget_status_ok").format(budget=budget))
         else:
-            st.warning("⚠️ 未设置预算")
+            st.warning(t("budget_status_missing"))

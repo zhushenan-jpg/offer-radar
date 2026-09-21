@@ -105,12 +105,47 @@ def build_crew(cfg, storage, profile, sources):
                 else "无待评分职位"
             )
 
+    class ParsePendingTool(BaseTool):
+        name: str = "parse_pending_jobs"
+        description: str = (
+            "对已采集的原始职位进行结构化解析(提取技能、级别、薪资等),"
+            "无需参数;返回解析摘要。"
+        )
+        _storage: object = None
+        _gateway: object = None
+
+        def __init__(self, storage, gateway):
+            super().__init__()
+            self._storage = storage
+            self._gateway = gateway
+
+        def _run(self) -> str:
+            from jobpilot.agents.parser import parse_jd_with_fallback
+            ids = self._storage.jobs.ids_by_status("new")
+            parsed = 0
+            for jid in ids:
+                job = self._storage.jobs.get(jid)
+                if job and job.description_md:
+                    parse_jd_with_fallback(self._gateway, job.description_md, jid)
+                    self._storage.jobs.update_status(jid, "parsed")
+                    parsed += 1
+            return f"解析完成 {parsed} 条职位"
+
     scout = Agent(
         role="职位搜集专员",
         goal="驱动采集工具,拿到本周目标公司全部新职位并如实汇报",
         backstory="你负责 OfferRadar 的数据入口,只信工具返回的结果,绝不编造职位。",
         llm=llm,
         tools=[CollectAllTool(storage, sources, "jobpilot.db")],
+        allow_delegation=False,
+        verbose=False,
+    )
+    parser = Agent(
+        role="JD 结构化分析师",
+        goal="驱动解析工具,将原始 JD 文本解析为结构化数据(技能、级别、薪资等)",
+        backstory="你负责 JD 的结构化解析,提取技能要求、工作职责、薪资范围等关键信息。",
+        llm=llm,
+        tools=[ParsePendingTool(storage, None)],
         allow_delegation=False,
         verbose=False,
     )
@@ -133,12 +168,17 @@ def build_crew(cfg, storage, profile, sources):
     )
 
     return Crew(
-        agents=[scout, matcher, reporter],
+        agents=[scout, parser, matcher, reporter],
         tasks=[
             Task(
                 description="调用 collect_all_sources 工具完成本周职位采集与清洗。",
                 expected_output="一行采集摘要:新增数量、各来源明细、失败来源。",
                 agent=scout,
+            ),
+            Task(
+                description="调用 parse_pending_jobs 工具,对新采集的职位进行结构化解析。",
+                expected_output="一行解析摘要:解析了多少条职位。",
+                agent=parser,
             ),
             Task(
                 description="调用 score_pending_jobs 工具,为全部已清洗职位评分。",

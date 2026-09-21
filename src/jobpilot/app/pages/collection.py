@@ -13,7 +13,7 @@ if str(_SRC) not in sys.path:
 if str(_APP_DIR) not in sys.path:
     sys.path.insert(0, str(_APP_DIR))
 
-from i18n import t
+from i18n import t, get_language
 
 
 def render():
@@ -25,13 +25,13 @@ def render():
     from pathlib import Path
     sources_file = Path(__file__).resolve().parents[4] / "sources.yaml"
     if not sources_file.exists():
-        st.warning("⚠️ Please configure target companies first.")
+        st.warning(t("configure_companies_first"))
         return
 
     import yaml
     sources = yaml.safe_load(sources_file.read_text(encoding="utf-8")) or []
     if not sources:
-        st.warning("⚠️ No target companies configured. Please add some.")
+        st.warning(t("no_companies_configured"))
         return
 
     # 显示当前配置
@@ -41,7 +41,7 @@ def render():
     df = pd.DataFrame(sources)
     st.dataframe(df, use_container_width=True)
 
-    st.write(f"共配置了 **{len(sources)}** 家公司")
+    st.write(t("companies_configured").format(count=len(sources)))
 
     # 采集选项
     st.header(t("collection_options"))
@@ -67,71 +67,87 @@ def render():
     st.divider()
 
     if st.button(t("start_collection"), type="primary", use_container_width=True):
-        with st.spinner("Collecting job information..."):
-            try:
-                from jobpilot.pipeline import collect_all, clean_pending, SourceCfg
-                from jobpilot.storage.db import Storage
+        try:
+            from jobpilot.pipeline import clean_pending, SourceCfg
+            from jobpilot.collectors import get_collector
+            from jobpilot.collectors.dedup import dedupe_jobs
+            from jobpilot.storage.db import Storage
+            import httpx
 
-                db_path = Path(__file__).resolve().parents[4] / "jobpilot.db"
-                storage = Storage.open(db_path)
+            db_path = Path(__file__).resolve().parents[4] / "jobpilot.db"
+            storage = Storage.open(db_path)
 
-                # 转换 sources 格式
-                source_cfgs = [SourceCfg.model_validate(s) for s in sources]
+            # 转换 sources 格式
+            source_cfgs = [SourceCfg.model_validate(s) for s in sources]
+            if limit > 0:
+                source_cfgs = source_cfgs[:limit]
 
-                # 执行采集
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
+            total = len(source_cfgs)
+            summary = {}
 
-                if limit > 0:
-                    # 限制模式：只采集前 N 个公司
-                    source_cfgs = source_cfgs[:limit]
+            # 进度条
+            progress_bar = st.progress(0, text=t("collection_progress").format(current=0, total=total))
 
-                summary = loop.run_until_complete(
-                    collect_all(storage, source_cfgs)
+            # 逐公司采集（显示进度）
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            client = httpx.AsyncClient(timeout=30, headers={"User-Agent": "OfferRadar/1.0"})
+
+            for i, src in enumerate(source_cfgs):
+                progress_bar.progress(
+                    (i) / total,
+                    text=t("collection_progress").format(current=i + 1, total=total),
                 )
-                loop.close()
+                try:
+                    collector = get_collector(src.source, client)
+                    jobs = loop.run_until_complete(collector.fetch(src.slug, src.name))
+                    kept, _removed = dedupe_jobs(jobs)
+                    new = 0
+                    for job in kept:
+                        is_new = storage.jobs.get(job.id) is None
+                        storage.jobs.upsert(job)
+                        if is_new:
+                            new += 1
+                    summary[src.label()] = new
+                except Exception as e:
+                    summary[src.label()] = -1
 
-                # 清洗新职位
-                cleaned = clean_pending(storage)
+            loop.run_until_complete(client.aclose())
+            loop.close()
 
-                # 显示结果
-                st.success("✅ Collection completed!")
+            progress_bar.progress(1.0, text=t("collection_done"))
 
-                st.header(t("collection_result"))
+            # 清洗新职位
+            cleaned = clean_pending(storage)
 
-                for source, count in summary.items():
-                    if count >= 0:
-                        st.write(f"- **{source}**: 新增 {count} 条职位")
-                    else:
-                        st.write(f"- **{source}**: ⚠️ 采集失败")
+            # 显示结果
+            st.success(t("collection_success"))
+            st.header(t("collection_result"))
 
-                st.write(f"\n已清洗 **{cleaned}** 条新职位")
+            for source, count in summary.items():
+                if count >= 0:
+                    st.write(f"- **{source}**: {t('new_jobs_count').format(count=count)}")
+                else:
+                    st.write(f"- **{source}**: {t('collection_failed_source')}")
 
-            except Exception as e:
-                st.error(f"❌ 采集失败: {e}")
-                st.exception(e)
+            st.write(f"\n{t('cleaned_count').format(count=cleaned)}")
+
+        except Exception as e:
+            err_str = str(e)
+            if "connect" in err_str.lower() or "timeout" in err_str.lower() or "network" in err_str.lower():
+                st.error(t("error_collection_network"))
+            elif "json" in err_str.lower() or "parse" in err_str.lower() or "decode" in err_str.lower():
+                st.error(t("error_collection_parse"))
+            else:
+                st.error(t("collection_failed").format(error=e))
+            st.exception(e)
 
     # 采集说明
     st.divider()
-    st.header("📖 说明")
+    st.header(t("how_to_add"))
 
-    with st.expander("如何添加更多公司？"):
-        st.markdown("""
-        1. 访问「🏢 目标公司」页面
-        2. 输入公司名称、选择平台（Greenhouse 或 Lever）
-        3. 输入公司在平台上的标识（slug）
-        4. 点击「添加公司」
+    with st.expander(t("how_to_add_expand")):
+        st.markdown(t("how_to_add_content"))
 
-        **如何找到公司的 slug？**
-        - 访问公司的招聘页面
-        - 查看 URL，例如：`https://boards.greenhouse.io/stripe`
-        - 其中 `stripe` 就是 slug
-        """)
-
-    with st.expander("采集频率建议"):
-        st.markdown("""
-        - **日常使用**: 每周采集 1-2 次即可
-        - **求职高峰期**: 可以每天采集
-        - **全量采集**: 适合初次使用或需要更新所有职位信息
-        - **增量采集**: 适合日常使用，只获取新职位
-        """)
+    with st.expander(t("collection_frequency")):
+        st.markdown(t("collection_frequency_content"))

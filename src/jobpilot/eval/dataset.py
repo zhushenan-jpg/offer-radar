@@ -8,7 +8,7 @@ def _now() -> str:
     return datetime.now(UTC).isoformat()
 
 
-def seed_dataset(storage, n: int = 40) -> list[dict]:
+def seed_dataset(storage, n: int = 50) -> list[dict]:
     """按公司均衡抽样 n 条职位进评测集;返回抽样明细."""
     companies = [
         r[0] for r in storage.conn.execute("SELECT DISTINCT company FROM jobs ORDER BY company")

@@ -19,6 +19,12 @@ TRANSLATIONS = {
         "collection": "🔄 一键采集",
         "jobs": "📋 职位列表",
         "monitoring": "📈 监控面板",
+        "annotation": "🏷️ 评测标注",
+        "review": "🔍 人工审核",
+        "resume_optimize": "✏️ 简历优化",
+        "interview_sim": "🎤 面试模拟",
+        "recommendations": "💡 职位推荐",
+        "salary": "💰 薪资分析",
 
         # 概览页面
         "overview_title": "🏠 OfferRadar 概览",
@@ -128,7 +134,9 @@ TRANSLATIONS = {
         "collection_limit_help": "0 表示不限制",
         "start_collection": "🚀 开始采集",
         "collection_result": "📊 采集结果",
-        "collection_failed": "❌ 采集失败",
+        "collection_failed": "❌ 采集失败: {error}",
+        "collection_progress": "正在采集... ({current}/{total})",
+        "collection_done": "采集完成！",
 
         # 职位列表页面
         "jobs_title": "📋 职位列表",
@@ -165,6 +173,251 @@ TRANSLATIONS = {
         "extended_costs": "扩展技能成本明细",
         "score_distribution": "📊 评分分布",
         "recent_activity": "🕒 最近活动",
+
+        # 错误提示（通用）
+        "error_budget_exceeded": "❌ 当月 API 预算已用完（{amount}），请下月再试或在「设置」中调高预算。",
+        "error_gateway_schema": "❌ AI 模型返回格式异常，已重试多次仍失败。请稍后重试。",
+        "error_network": "❌ 网络连接失败，请检查网络状态和 API 地址配置。",
+        "error_timeout": "❌ 请求超时，服务器响应过慢。请稍后重试。",
+        "error_auth": "❌ API Key 无效或已过期，请在「设置」中更新。",
+        "error_unknown": "❌ 发生未知错误: {error}",
+        "error_collection_network": "❌ 采集失败: 无法连接到职位平台 API。请检查网络。",
+        "error_collection_parse": "❌ 采集失败: 返回数据格式异常，可能是平台 API 变更。",
+        "configure_companies_first": "⚠️ 请先在「目标公司」页面配置要监控的公司。",
+        "no_companies_configured": "⚠️ 尚未配置目标公司，请先添加。",
+
+        # 标注页面
+        "annotation_title": "🏷️ 评测标注",
+        "annotation_info": "对评测集中的职位进行人工评分，用于校验模型评分的一致性。",
+        "seed_count": "抽样数量",
+        "seed_dataset_btn": "🎲 抽样建立评测集",
+        "seed_success": "✅ 已抽样 {count} 条职位进入评测集",
+        "eval_empty_warning": "⚠️ 评测集为空，请先点击「抽样建立评测集」。",
+        "annotator_name": "标注人名称",
+        "annotator_help": "用于区分不同标注人的评分",
+        "annotation_progress": "标注进度: {done}/{total}",
+        "total_eval_jobs": "评测集总数",
+        "annotated_count": "已标注",
+        "pending_count": "待标注",
+        "all_annotated": "✅ 所有职位已标注完成！",
+        "annotation_pairs": "📊 模型分 vs 人工分对照",
+        "model_score": "模型分",
+        "human_score": "人工分",
+        "score_diff": "差值",
+        "pending_annotations": "📝 待标注职位",
+        "select_job_to_annotate": "选择要标注的职位",
+        "view_jd_content": "📄 查看 JD 内容",
+        "model_score_ref": "📌 模型评分参考: {score}/100",
+        "enter_annotation": "✍️ 输入人工评分",
+        "human_score_label": "人工综合评分 (0-100)",
+        "human_score_help": "0 = 完全不匹配，100 = 完美匹配",
+        "scoring_reference": "📖 评分参考标准",
+        "scoring_reference_content": """**90-100**: 高度匹配，技能/经验/意向高度吻合
+**70-89**: 较好匹配，大部分要求满足，少数可弥补
+**50-69**: 一般匹配，核心技能有交集但有明显差距
+**30-49**: 匹配度低，仅少量技能相关
+**0-29**: 不匹配，几乎无交集""",
+        "submit_annotation": "✅ 提交评分",
+        "annotation_saved": "✅ 评分已保存: {score}/100",
+
+        # 审核页面
+        "review_title": "🔍 人工审核队列",
+        "review_info": "审核低置信度评分（confidence < 60%）。您可以确认模型评分或覆盖为人工评分。",
+        "review_pending": "待审核",
+        "review_approved": "已审核",
+        "review_auto": "自动通过",
+        "review_all_done": "✅ 所有评分均已审核或自动通过！",
+        "review_queue": "📝 待审核列表",
+        "review_action": "✍️ 审核操作",
+        "review_approve": "✅ 确认模型评分",
+        "review_approved_msg": "✅ 已确认模型评分",
+        "review_override_label": "覆盖评分 (0-100)",
+        "review_override": "📝 覆盖为人工评分",
+        "review_overridden_msg": "✅ 已覆盖为人工评分: {score}/100",
+
+        # 简历优化页面
+        "resume_optimize_title": "✏️ AI 简历优化",
+        "resume_optimize_info": "基于 Gap 分析，AI 生成简历改写建议和 HR 开场白。仅提供建议，不代写。",
+        "select_job": "选择目标职位",
+        "generate_resume_patch": "🚀 生成优化建议",
+        "generating_patch": "正在分析简历并生成优化建议...",
+        "patch_generated": "✅ 优化建议已生成！",
+        "bullet_rewrites": "✏️ Bullet 改写建议",
+        "original_text": "原文",
+        "suggested_rewrite": "改写建议",
+        "matched_requirement": "匹配的 JD 要求",
+        "missing_evidence": "📋 缺失证据建议",
+        "hr_opener": "💬 HR 开场白",
+        "patch_markdown": "📄 合并的增量内容",
+        "download_patch": "📥 下载优化建议",
+
+        # 面试模拟页面
+        "interview_sim_title": "🎤 面试模拟",
+        "interview_sim_info": "基于目标职位进行交互式面试问答练习。AI 面试官会提问并评价你的回答。",
+        "interview_prep_brief": "📋 面试准备摘要",
+        "predicted_questions": "预测问题",
+        "weak_points": "薄弱环节",
+        "start_interview": "🎯 开始面试",
+        "end_interview": "⏹️ 结束面试",
+        "type_your_answer": "输入你的回答...",
+
+        # 职位推荐页面
+        "recommendations_title": "💡 职位推荐",
+        "recommendations_info": "基于你的历史高分评分，推荐相似职位。",
+        "no_high_score_jobs": "暂无高分职位数据，请先完成评分。",
+        "top_companies": "🏆 高分公司",
+        "jobs_count": "条职位",
+        "all_jobs_scored": "✅ 所有职位已评分！",
+        "recommended_jobs": "📋 推荐职位",
+        "recommendation_reason": "优先推荐高分公司的未评分职位：",
+        "high_score_company": "高分公司",
+        "similar_position": "相似职位",
+        "recommend_reason": "推荐原因",
+
+        # 薪资分析页面
+        "salary_title": "💰 薪资分析",
+        "salary_info": "从 JD 中提取薪资信息，分析各公司和职位的薪资范围。",
+        "no_salary_data": "未从 JD 中检测到薪资信息。薪资分析需要 JD 中包含明确的薪资范围。",
+        "salary_overview": "📊 薪资概览",
+        "salary_avg_metric": "平均薪资",
+        "salary_max_metric": "最高薪资",
+        "salary_min_metric": "最低薪资",
+        "salary_by_company": "🏢 按公司分组",
+        "salary_avg_label": "平均薪资",
+        "salary_low_label": "最低薪资",
+        "salary_high_label": "最高薪资",
+        "salary_vs_score": "📊 薪资 vs 评分",
+        "salary_distribution": "📊 薪资分布",
+        "score": "评分",
+
+        # 公司页面
+        "select_companies_delete": "选择要删除的公司",
+        "delete_selected": "删除选中",
+        "deleted_count": "✅ 已删除 {count} 个公司",
+        "no_companies_warning": "⚠️ 暂未配置目标公司，请在下方添加。",
+        "company_exists": "⚠️ 公司 {slug} 已存在",
+        "company_added": "✅ 已添加 {name}",
+        "fill_required": "⚠️ 请填写公司名称和平台标识",
+        "import_success": "✅ 成功导入 {count} 个新公司",
+        "import_format_error": "❌ 格式错误，请使用 YAML 列表格式",
+        "import_failed": "❌ 导入失败: {error}",
+
+        # 概览页面 - 配置状态
+        "api_key_configured": "✅ API Key",
+        "api_key_not_configured": "❌ API Key 未配置",
+        "api_key_config_error": "❌ API Key 配置错误",
+        "not_configured": "❌ 未配置",
+        "resume_configured": "✅ 个人简历",
+        "companies_count": "✅ {count} 家公司",
+        "scores_count": "✅ {count} 条评分",
+        "db_empty": "⚠️ 数据库为空",
+        "no_data_yet": "⚠️ 暂无数据",
+
+        # 概览页面 - 功能介绍
+        "features_title": "📖 功能介绍",
+        "smart_scoring_title": "📊 智能评分",
+        "smart_scoring_desc": "基于 AI 的多维度匹配评分，帮你快速判断职位适合度",
+        "evidence_chain_title": "🔍 证据链",
+        "evidence_chain_desc": "自动提取简历中的可验证声明，与 JD 要求进行匹配",
+        "gap_analysis_title": "⚠️ 差距分析",
+        "gap_analysis_desc": "识别简历与职位要求的差距，给出具体改进建议",
+        "company_monitor_title": "🏢 公司监控",
+        "company_monitor_desc": "持续监控目标公司的职位发布，第一时间获取新机会",
+        "cost_control_title": "📈 成本控制",
+        "cost_control_desc": "精确计量 API 调用成本，支持设置月度预算上限",
+        "notification_push_title": "📧 通知推送",
+        "notification_push_desc": "高分职位自动推送，不错过任何好机会",
+
+        # 概览页面 - 系统信息
+        "system_info_title": "ℹ️ 系统信息",
+        "version_label": "版本",
+        "tech_stack_label": "技术栈",
+        "model_label": "模型",
+        "data_source_label": "数据源",
+        "license_label": "开源协议",
+
+        # 设置页面 - 校验
+        "validating_api_key": "正在验证 API Key...",
+        "api_key_invalid": "❌ API Key 验证失败: {error}",
+
+        # 设置页面 - 状态
+        "api_key_status_ok": "✅ API Key 已配置",
+        "api_key_status_missing": "❌ API Key 未配置",
+        "api_url_status_ok": "✅ API 地址已配置",
+        "api_url_status_default": "⚠️ 使用默认地址",
+        "budget_status_ok": "✅ 预算: ¥{budget}/月",
+        "budget_status_missing": "⚠️ 未设置预算",
+
+        # 评分页面
+        "profile_required": "⚠️ 请先在「我的简历」页面配置个人信息。",
+        "api_key_required": "⚠️ 请先在「设置」页面配置 API Key。",
+        "pdf_parsing": "PDF parsing...",
+        "pdf_coming_soon": "PDF parsing coming soon. Please use text paste.",
+        "uploaded_file": "✅ Uploaded: {name}",
+        "analyzing": "Analyzing JD and scoring...",
+        "scoring_completed": "✅ Scoring completed!",
+        "overall_match": "综合匹配",
+        "confidence_label": "置信度",
+        "summary_label": "评价",
+        "dimension_scores_label": "维度评分",
+        "evidence_chain_label": "🔍 证据链",
+        "gap_analysis_label": "⚠️ 差距分析",
+        "suggestion_label": "建议",
+        "scoring_error": "❌ 评分失败: {error}",
+        "input_prompt": "💡 请在上方输入或上传职位描述（JD）",
+
+        # 职位列表页面
+        "no_jobs_warning": "⚠️ 暂无数据，请先采集职位。",
+        "col_score": "分数",
+        "col_company": "公司",
+        "col_title": "职位",
+        "col_location": "地点",
+        "col_confidence": "置信度",
+        "dim_scores": "维度评分",
+        "summary_header": "总结",
+        "view_original": "🔗 查看原始职位",
+        "no_match_jobs": "没有找到匹配的职位。",
+        "export_csv": "📥 导出为 CSV",
+
+        # 采集页面
+        "companies_configured": "共配置了 **{count}** 家公司",
+        "collection_success": "✅ Collection completed!",
+        "new_jobs_count": "新增 {count} 条职位",
+        "collection_failed_source": "⚠️ 采集失败",
+        "cleaned_count": "已清洗 **{count}** 条新职位",
+        "how_to_add": "📖 说明",
+        "how_to_add_expand": "如何添加更多公司？",
+        "how_to_add_content": """1. 访问「🏢 目标公司」页面
+2. 输入公司名称、选择平台（Greenhouse 或 Lever）
+3. 输入公司在平台上的标识（slug）
+4. 点击「添加公司」
+
+**如何找到公司的 slug？**
+- 访问公司的招聘页面
+- 查看 URL，例如：`https://boards.greenhouse.io/stripe`
+- 其中 `stripe` 就是 slug""",
+        "collection_frequency": "采集频率建议",
+        "collection_frequency_content": """- **日常使用**: 每周采集 1-2 次即可
+- **求职高峰期**: 可以每天采集
+- **全量采集**: 适合初次使用或需要更新所有职位信息
+- **增量采集**: 适合日常使用，只获取新职位""",
+
+        # 监控页面
+        "no_monitor_data": "⚠️ 暂无数据。",
+        "no_cost_data": "暂无成本数据",
+        "cost_fetch_error": "获取成本数据失败: {error}",
+        "score_range_label": "分数段",
+        "count_label": "数量",
+        "no_score_data": "暂无评分数据",
+        "score_fetch_error": "获取评分分布失败: {error}",
+        "col_job_id": "职位 ID",
+        "col_resume_version": "简历版本",
+        "col_tokens": "Token 数",
+        "col_cost": "成本",
+        "col_created_at": "创建时间",
+        "no_activity": "暂无活动记录",
+        "activity_fetch_error": "获取活动记录失败: {error}",
+        "data_update_time": "数据更新时间: {time}",
 
         # 通用
         "loading": "加载中...",
@@ -207,6 +460,12 @@ TRANSLATIONS = {
         "collection": "🔄 One-Click Collection",
         "jobs": "📋 Job List",
         "monitoring": "📈 Monitoring",
+        "annotation": "🏷️ Annotation",
+        "review": "🔍 Review",
+        "resume_optimize": "✏️ Resume Optimize",
+        "interview_sim": "🎤 Interview Sim",
+        "recommendations": "💡 Recommendations",
+        "salary": "💰 Salary Analysis",
 
         # Overview page
         "overview_title": "🏠 OfferRadar Overview",
@@ -316,7 +575,9 @@ TRANSLATIONS = {
         "collection_limit_help": "0 for no limit",
         "start_collection": "🚀 Start Collection",
         "collection_result": "📊 Collection Result",
-        "collection_failed": "❌ Collection Failed",
+        "collection_failed": "❌ Collection failed: {error}",
+        "collection_progress": "Collecting... ({current}/{total})",
+        "collection_done": "Collection complete!",
 
         # Jobs page
         "jobs_title": "📋 Job List",
@@ -353,6 +614,251 @@ TRANSLATIONS = {
         "extended_costs": "Extended Skills Cost Details",
         "score_distribution": "📊 Score Distribution",
         "recent_activity": "🕒 Recent Activity",
+
+        # Error messages (common)
+        "error_budget_exceeded": "❌ Monthly API budget exhausted ({amount}). Please wait until next month or increase budget in Settings.",
+        "error_gateway_schema": "❌ AI model returned invalid format after multiple retries. Please try again later.",
+        "error_network": "❌ Network connection failed. Please check your network and API URL configuration.",
+        "error_timeout": "❌ Request timed out. Server is responding slowly. Please try again later.",
+        "error_auth": "❌ API Key is invalid or expired. Please update it in Settings.",
+        "error_unknown": "❌ Unknown error: {error}",
+        "error_collection_network": "❌ Collection failed: Unable to connect to job platform API. Please check network.",
+        "error_collection_parse": "❌ Collection failed: Response format error. Platform API may have changed.",
+        "configure_companies_first": "⚠️ Please configure target companies in the 'Target Companies' page first.",
+        "no_companies_configured": "⚠️ No target companies configured. Please add some first.",
+
+        # Annotation page
+        "annotation_title": "🏷️ Evaluation Annotation",
+        "annotation_info": "Manually score jobs in the evaluation dataset to validate model scoring consistency.",
+        "seed_count": "Sample Size",
+        "seed_dataset_btn": "🎲 Seed Evaluation Dataset",
+        "seed_success": "✅ Seeded {count} jobs into evaluation dataset",
+        "eval_empty_warning": "⚠️ Evaluation dataset is empty. Click 'Seed Evaluation Dataset' first.",
+        "annotator_name": "Annotator Name",
+        "annotator_help": "Used to distinguish scores from different annotators",
+        "annotation_progress": "Progress: {done}/{total}",
+        "total_eval_jobs": "Total Eval Jobs",
+        "annotated_count": "Annotated",
+        "pending_count": "Pending",
+        "all_annotated": "✅ All jobs have been annotated!",
+        "annotation_pairs": "📊 Model vs Human Score Comparison",
+        "model_score": "Model Score",
+        "human_score": "Human Score",
+        "score_diff": "Diff",
+        "pending_annotations": "📝 Pending Annotations",
+        "select_job_to_annotate": "Select a job to annotate",
+        "view_jd_content": "📄 View JD Content",
+        "model_score_ref": "📌 Model score reference: {score}/100",
+        "enter_annotation": "✍️ Enter Human Score",
+        "human_score_label": "Human Score (0-100)",
+        "human_score_help": "0 = No match, 100 = Perfect match",
+        "scoring_reference": "📖 Scoring Reference",
+        "scoring_reference_content": """**90-100**: Highly matching, skills/experience/intent align well
+**70-89**: Good match, most requirements met, minor gaps
+**50-69**: Average match, core skills overlap but notable gaps
+**30-49**: Low match, only a few relevant skills
+**0-29**: No match, virtually no overlap""",
+        "submit_annotation": "✅ Submit Score",
+        "annotation_saved": "✅ Score saved: {score}/100",
+
+        # Review page
+        "review_title": "🔍 Human Review Queue",
+        "review_info": "Review low-confidence scores (confidence < 60%). You can confirm the model score or override with a human score.",
+        "review_pending": "Pending Review",
+        "review_approved": "Reviewed",
+        "review_auto": "Auto-passed",
+        "review_all_done": "✅ All scores have been reviewed or auto-passed!",
+        "review_queue": "📝 Pending Review List",
+        "review_action": "✍️ Review Action",
+        "review_approve": "✅ Confirm Model Score",
+        "review_approved_msg": "✅ Model score confirmed",
+        "review_override_label": "Override Score (0-100)",
+        "review_override": "📝 Override with Human Score",
+        "review_overridden_msg": "✅ Overridden with human score: {score}/100",
+
+        # Resume optimize page
+        "resume_optimize_title": "✏️ AI Resume Optimization",
+        "resume_optimize_info": "AI generates resume improvement suggestions and HR openers based on Gap analysis. Suggestions only, not ghostwriting.",
+        "select_job": "Select target job",
+        "generate_resume_patch": "🚀 Generate Optimization Suggestions",
+        "generating_patch": "Analyzing resume and generating suggestions...",
+        "patch_generated": "✅ Optimization suggestions generated!",
+        "bullet_rewrites": "✏️ Bullet Rewrite Suggestions",
+        "original_text": "Original",
+        "suggested_rewrite": "Suggested Rewrite",
+        "matched_requirement": "Matched JD Requirement",
+        "missing_evidence": "📋 Missing Evidence Suggestions",
+        "hr_opener": "💬 HR Opener",
+        "patch_markdown": "📄 Merged Incremental Content",
+        "download_patch": "📥 Download Optimization Suggestions",
+
+        # Interview simulation page
+        "interview_sim_title": "🎤 Interview Simulation",
+        "interview_sim_info": "Practice interactive interview Q&A based on target position. AI interviewer will ask questions and evaluate your answers.",
+        "interview_prep_brief": "📋 Interview Prep Summary",
+        "predicted_questions": "Predicted Questions",
+        "weak_points": "Weak Points",
+        "start_interview": "🎯 Start Interview",
+        "end_interview": "⏹️ End Interview",
+        "type_your_answer": "Type your answer...",
+
+        # Recommendations page
+        "recommendations_title": "💡 Job Recommendations",
+        "recommendations_info": "Recommend similar jobs based on your high-scoring history.",
+        "no_high_score_jobs": "No high-scoring jobs yet. Please complete scoring first.",
+        "top_companies": "🏆 Top Companies",
+        "jobs_count": "jobs",
+        "all_jobs_scored": "✅ All jobs have been scored!",
+        "recommended_jobs": "📋 Recommended Jobs",
+        "recommendation_reason": "Prioritizing unscored jobs from high-scoring companies:",
+        "high_score_company": "High-scoring company",
+        "similar_position": "Similar position",
+        "recommend_reason": "Reason",
+
+        # Salary analysis page
+        "salary_title": "💰 Salary Analysis",
+        "salary_info": "Extract salary info from JDs and analyze salary ranges by company and position.",
+        "no_salary_data": "No salary information detected in JDs. Salary analysis requires explicit salary ranges in JDs.",
+        "salary_overview": "📊 Salary Overview",
+        "salary_avg_metric": "Average Salary",
+        "salary_max_metric": "Max Salary",
+        "salary_min_metric": "Min Salary",
+        "salary_by_company": "🏢 By Company",
+        "salary_avg_label": "Avg Salary",
+        "salary_low_label": "Min Salary",
+        "salary_high_label": "Max Salary",
+        "salary_vs_score": "📊 Salary vs Score",
+        "salary_distribution": "📊 Salary Distribution",
+        "score": "Score",
+
+        # Companies page
+        "select_companies_delete": "Select companies to delete",
+        "delete_selected": "Delete selected",
+        "deleted_count": "✅ Deleted {count} companies",
+        "no_companies_warning": "⚠️ No target companies configured. Please add some below.",
+        "company_exists": "⚠️ Company {slug} already exists",
+        "company_added": "✅ Added {name}",
+        "fill_required": "⚠️ Please fill in company name and platform identifier",
+        "import_success": "✅ Successfully imported {count} new companies",
+        "import_format_error": "❌ Format error. Please use YAML list format",
+        "import_failed": "❌ Import failed: {error}",
+
+        # Overview - config status
+        "api_key_configured": "✅ API Key",
+        "api_key_not_configured": "❌ API Key not configured",
+        "api_key_config_error": "❌ API Key config error",
+        "not_configured": "❌ Not configured",
+        "resume_configured": "✅ Resume",
+        "companies_count": "✅ {count} companies",
+        "scores_count": "✅ {count} scores",
+        "db_empty": "⚠️ Database is empty",
+        "no_data_yet": "⚠️ No data yet",
+
+        # Overview - features
+        "features_title": "📖 Features",
+        "smart_scoring_title": "📊 Smart Scoring",
+        "smart_scoring_desc": "AI-powered multi-dimensional matching score to quickly assess job fit",
+        "evidence_chain_title": "🔍 Evidence Chain",
+        "evidence_chain_desc": "Automatically extract verifiable claims from your resume and match against JD requirements",
+        "gap_analysis_title": "⚠️ Gap Analysis",
+        "gap_analysis_desc": "Identify gaps between your resume and job requirements with specific improvement suggestions",
+        "company_monitor_title": "🏢 Company Monitoring",
+        "company_monitor_desc": "Continuously monitor target company job postings for new opportunities",
+        "cost_control_title": "📈 Cost Control",
+        "cost_control_desc": "Precisely track API call costs with monthly budget limits",
+        "notification_push_title": "📧 Notification Push",
+        "notification_push_desc": "Auto-push high-scoring jobs so you never miss a great opportunity",
+
+        # Overview - system info
+        "system_info_title": "ℹ️ System Information",
+        "version_label": "Version",
+        "tech_stack_label": "Tech Stack",
+        "model_label": "Model",
+        "data_source_label": "Data Source",
+        "license_label": "License",
+
+        # Settings - validation
+        "validating_api_key": "Validating API Key...",
+        "api_key_invalid": "❌ API Key validation failed: {error}",
+
+        # Settings - status
+        "api_key_status_ok": "✅ API Key configured",
+        "api_key_status_missing": "❌ API Key not configured",
+        "api_url_status_ok": "✅ API URL configured",
+        "api_url_status_default": "⚠️ Using default URL",
+        "budget_status_ok": "✅ Budget: ¥{budget}/month",
+        "budget_status_missing": "⚠️ No budget set",
+
+        # Scoring page
+        "profile_required": "⚠️ Please configure your profile in the 'My Profile' page first.",
+        "api_key_required": "⚠️ Please configure your API Key in the 'Settings' page first.",
+        "pdf_parsing": "PDF parsing...",
+        "pdf_coming_soon": "PDF parsing coming soon. Please use text paste.",
+        "uploaded_file": "✅ Uploaded: {name}",
+        "analyzing": "Analyzing JD and scoring...",
+        "scoring_completed": "✅ Scoring completed!",
+        "overall_match": "Overall Match",
+        "confidence_label": "Confidence",
+        "summary_label": "Summary",
+        "dimension_scores_label": "Dimension Scores",
+        "evidence_chain_label": "🔍 Evidence Chain",
+        "gap_analysis_label": "⚠️ Gap Analysis",
+        "suggestion_label": "Suggestion",
+        "scoring_error": "❌ Scoring failed: {error}",
+        "input_prompt": "💡 Please input or upload a job description (JD) above",
+
+        # Jobs page
+        "no_jobs_warning": "⚠️ No data yet. Please collect jobs first.",
+        "col_score": "Score",
+        "col_company": "Company",
+        "col_title": "Title",
+        "col_location": "Location",
+        "col_confidence": "Confidence",
+        "dim_scores": "Dimension Scores",
+        "summary_header": "Summary",
+        "view_original": "🔗 View Original Job",
+        "no_match_jobs": "No matching jobs found.",
+        "export_csv": "📥 Export as CSV",
+
+        # Collection page
+        "companies_configured": "Total **{count}** companies configured",
+        "collection_success": "✅ Collection completed!",
+        "new_jobs_count": "{count} new jobs collected",
+        "collection_failed_source": "⚠️ Collection failed",
+        "cleaned_count": "Cleaned **{count}** new jobs",
+        "how_to_add": "📖 Instructions",
+        "how_to_add_expand": "How to add more companies?",
+        "how_to_add_content": """1. Go to '🏢 Target Companies' page
+2. Enter company name, select platform (Greenhouse or Lever)
+3. Enter the company's platform identifier (slug)
+4. Click 'Add Company'
+
+**How to find a company's slug?**
+- Visit the company's careers page
+- Check the URL, e.g.: `https://boards.greenhouse.io/stripe`
+- The `stripe` part is the slug""",
+        "collection_frequency": "Collection Frequency Tips",
+        "collection_frequency_content": """- **Daily use**: Collect 1-2 times per week
+- **Job hunting season**: Collect daily
+- **Full collection**: Best for first-time use or refreshing all data
+- **Incremental**: Best for daily use, only fetches new jobs""",
+
+        # Monitoring page
+        "no_monitor_data": "⚠️ No data available.",
+        "no_cost_data": "No cost data available",
+        "cost_fetch_error": "Failed to fetch cost data: {error}",
+        "score_range_label": "Score Range",
+        "count_label": "Count",
+        "no_score_data": "No score data available",
+        "score_fetch_error": "Failed to fetch score distribution: {error}",
+        "col_job_id": "Job ID",
+        "col_resume_version": "Resume Version",
+        "col_tokens": "Tokens",
+        "col_cost": "Cost",
+        "col_created_at": "Created At",
+        "no_activity": "No activity records",
+        "activity_fetch_error": "Failed to fetch activity records: {error}",
+        "data_update_time": "Data updated: {time}",
 
         # Common
         "loading": "Loading...",

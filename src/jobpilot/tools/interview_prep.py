@@ -32,25 +32,37 @@ class InterviewPrep:
     def generate_brief(
         self,
         job_posting_summary: str,
-        company_research: str,
-        claims: list[dict],
-        gaps: list[dict],
-        resume_text: str,
-        job_id: str,
+        company_research: str = "",
+        claims: list[dict] | None = None,
+        gaps: list[dict] | None = None,
+        resume_text: str = "",
+        job_id: str = "",
+        company_name: str = "",
     ) -> InterviewBrief:
         """生成面试速览.
 
         Args:
             job_posting_summary: JD 摘要
-            company_research: 公司调研报告
+            company_research: 公司调研报告（为空时自动调用调研工具生成）
             claims: Claim 列表（dict 格式）
             gaps: Gap 列表（dict 格式）
             resume_text: 简历原文
             job_id: 职位 ID
+            company_name: 公司名称（用于自动调研）
 
         Returns:
             InterviewBrief: 面试速览
         """
+        if claims is None:
+            claims = []
+        if gaps is None:
+            gaps = []
+
+        # 如果没有传入公司调研，自动调用调研工具
+        if not company_research and company_name:
+            from jobpilot.tools.researcher_tool import ResearcherTool
+            researcher = ResearcherTool(self.gateway, self.storage)
+            company_research = researcher.research(company_name)
         from jobpilot.agents.interview_prompts import build_interview_prep_prompt
 
         # 构建 prompt
@@ -88,14 +100,15 @@ def generate_interview_brief(
     gateway: LLMGateway,
     storage,
     job_posting_summary: str,
-    company_research: str,
-    claims: list[dict],
-    gaps: list[dict],
-    resume_text: str,
-    job_id: str,
+    company_research: str = "",
+    claims: list[dict] | None = None,
+    gaps: list[dict] | None = None,
+    resume_text: str = "",
+    job_id: str = "",
+    company_name: str = "",
 ) -> InterviewBrief:
     """便捷函数:生成面试速览并保存."""
     prep = InterviewPrep(gateway, storage)
     return prep.generate_brief(
-        job_posting_summary, company_research, claims, gaps, resume_text, job_id
+        job_posting_summary, company_research, claims, gaps, resume_text, job_id, company_name
     )

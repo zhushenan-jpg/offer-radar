@@ -26,12 +26,12 @@ def render():
 
     profile_path = Path(__file__).resolve().parents[4] / "profile.yaml"
     if not profile_path.exists():
-        st.warning("⚠️ 请先在「我的简历」页面配置个人信息。")
+        st.warning(t("profile_required"))
         return
 
     config = GatewayConfig()
     if not config.api_key.get_secret_value():
-        st.warning("⚠️ 请先在「设置」页面配置 API Key。")
+        st.warning(t("api_key_required"))
         return
 
     # JD 输入
@@ -71,18 +71,18 @@ Requirements:
 
         if uploaded_file:
             if uploaded_file.type == "application/pdf":
-                st.info("PDF parsing...")
-                st.warning("PDF parsing coming soon. Please use text paste.")
+                st.info(t("pdf_parsing"))
+                st.warning(t("pdf_coming_soon"))
             else:
                 jd_text = uploaded_file.read().decode("utf-8")
-                st.success(f"✅ Uploaded: {uploaded_file.name}")
+                st.success(t("uploaded_file").format(name=uploaded_file.name))
 
     # 评分按钮
     st.divider()
 
     if jd_text:
         if st.button(t("start_scoring"), type="primary", use_container_width=True):
-            with st.spinner("Analyzing JD and scoring..."):
+            with st.spinner(t("analyzing")):
                 try:
                     # 加载配置和简历
                     profile = load_profile(profile_path)
@@ -117,7 +117,7 @@ Requirements:
                         parsed_jd=parsed_jd, job_id=job.id,
                     )
 
-                    st.success("✅ Scoring completed!")
+                    st.success(t("scoring_completed"))
 
                     # 显示结果
                     st.header(t("scoring_result"))
@@ -125,14 +125,14 @@ Requirements:
                     # 综合分数
                     col1, col2, col3 = st.columns(3)
                     with col1:
-                        st.metric("综合匹配", f"{result.overall}/100")
+                        st.metric(t("overall_match"), f"{result.overall}/100")
                     with col2:
-                        st.metric("置信度", f"{result.confidence:.0%}")
+                        st.metric(t("confidence_label"), f"{result.confidence:.0%}")
                     with col3:
-                        st.metric("评价", result.summary[:50] + "...")
+                        st.metric(t("summary_label"), result.summary[:50] + "...")
 
                     # 维度评分
-                    st.subheader("维度评分")
+                    st.subheader(t("dimension_scores_label"))
                     for dim, data in result.dims.items():
                         col1, col2 = st.columns([1, 3])
                         with col1:
@@ -143,21 +143,34 @@ Requirements:
 
                     # 证据链
                     if result.claims:
-                        st.subheader("🔍 证据链")
+                        st.subheader(t("evidence_chain_label"))
                         for claim in result.claims[:5]:
                             st.write(f"- **{claim.claim_type}**: {claim.claim_text} ({claim.strength})")
 
                     # 差距分析
                     if result.gaps:
-                        st.subheader("⚠️ 差距分析")
+                        st.subheader(t("gap_analysis_label"))
                         for gap in result.gaps:
                             st.write(f"- **{gap.gap_type}**: {gap.jd_requirement}")
                             if gap.mitigation:
-                                st.caption(f"  💡 建议: {gap.mitigation}")
+                                st.caption(f"  💡 {t('suggestion_label')}: {gap.mitigation}")
 
                 except Exception as e:
-                    st.error(f"❌ 评分失败: {e}")
+                    err_str = str(e)
+                    from jobpilot.llm_gateway.exceptions import BudgetExceeded, GatewaySchemaError
+                    if isinstance(e, BudgetExceeded):
+                        st.error(t("error_budget_exceeded").format(amount=f"¥{e}"))
+                    elif isinstance(e, GatewaySchemaError):
+                        st.error(t("error_gateway_schema"))
+                    elif "timeout" in err_str.lower() or "timed out" in err_str.lower():
+                        st.error(t("error_timeout"))
+                    elif "401" in err_str or "auth" in err_str.lower() or "invalid" in err_str.lower():
+                        st.error(t("error_auth"))
+                    elif "connect" in err_str.lower() or "network" in err_str.lower():
+                        st.error(t("error_network"))
+                    else:
+                        st.error(t("scoring_error").format(error=e))
                     st.exception(e)
 
     else:
-        st.info("💡 请在上方输入或上传职位描述（JD）")
+        st.info(t("input_prompt"))

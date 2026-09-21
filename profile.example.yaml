@@ -1,0 +1,40 @@
+# OfferRadar 示例简历配置
+# 复制此文件为 profile.yaml 并替换为你的真实信息
+# profile.yaml 已在 .gitignore 中，不会被提交
+
+name: 张三
+skills:
+  - Python
+  - Java
+  - SQL
+  - Git
+  - Docker
+years: 2
+education: 本科·计算机科学与技术
+resume_md: |
+  张三 —— 计算机科学与技术专业学生
+
+  技能:
+  - Python 约 2 年，熟悉 Django/FastAPI 框架
+  - Java 约 1 年，了解 Spring Boot
+  - 数据库：MySQL/PostgreSQL，能写复杂查询
+  - 工具：Git、Linux、Docker
+
+  项目经历:
+  - 电商平台后端开发（Python + FastAPI + MySQL）
+  - 个人博客系统（Java + Spring Boot）
+
+  其他：CET-6
+desired:
+  roles:
+    - 后端开发
+    - 全栈开发
+    - 软件工程师
+  cities:
+    - 北京
+    - 上海
+    - 深圳
+    - 远程
+  remote_ok: true
+  salary_min: 15000
+  salary_max: 30000

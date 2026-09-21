@@ -40,27 +40,27 @@ def render():
                 from jobpilot.config import GatewayConfig
                 config = GatewayConfig()
                 if config.api_key.get_secret_value():
-                    st.success("✅ API Key")
+                    st.success(t("api_key_configured"))
                 else:
-                    st.error("❌ API Key 未配置")
+                    st.error(t("api_key_not_configured"))
             except Exception:
-                st.error("❌ API Key 配置错误")
+                st.error(t("api_key_config_error"))
         else:
-            st.error("❌ 未配置")
+            st.error(t("not_configured"))
 
     with col2:
         if profile_file.exists():
-            st.success("✅ 个人简历")
+            st.success(t("resume_configured"))
         else:
-            st.error("❌ 未配置")
+            st.error(t("not_configured"))
 
     with col3:
         if sources_file.exists():
             import yaml
             sources = yaml.safe_load(sources_file.read_text(encoding="utf-8")) or []
-            st.success(f"✅ {len(sources)} 家公司")
+            st.success(t("companies_count").format(count=len(sources)))
         else:
-            st.error("❌ 未配置")
+            st.error(t("not_configured"))
 
     with col4:
         if db_file.exists():
@@ -69,13 +69,13 @@ def render():
             try:
                 job_count = conn.execute("SELECT COUNT(*) FROM jobs").fetchone()[0]
                 score_count = conn.execute("SELECT COUNT(*) FROM scores").fetchone()[0]
-                st.success(f"✅ {score_count} 条评分")
+                st.success(t("scores_count").format(count=score_count))
             except Exception:
-                st.warning("⚠️ 数据库为空")
+                st.warning(t("db_empty"))
             finally:
                 conn.close()
         else:
-            st.warning("⚠️ 暂无数据")
+            st.warning(t("no_data_yet"))
 
     # 快速开始
     st.header(t("quick_start"))
@@ -89,44 +89,44 @@ def render():
     """)
 
     # 功能介绍
-    st.header("📖 功能介绍")
+    st.header(t("features_title"))
 
     col1, col2 = st.columns(2)
 
     with col1:
-        st.subheader("📊 智能评分")
-        st.write("基于 AI 的多维度匹配评分，帮你快速判断职位适合度")
+        st.subheader(t("smart_scoring_title"))
+        st.write(t("smart_scoring_desc"))
 
-        st.subheader("🔍 证据链")
-        st.write("自动提取简历中的可验证声明，与 JD 要求进行匹配")
+        st.subheader(t("evidence_chain_title"))
+        st.write(t("evidence_chain_desc"))
 
-        st.subheader("⚠️ 差距分析")
-        st.write("识别简历与职位要求的差距，给出具体改进建议")
+        st.subheader(t("gap_analysis_title"))
+        st.write(t("gap_analysis_desc"))
 
     with col2:
-        st.subheader("🏢 公司监控")
-        st.write("持续监控目标公司的职位发布，第一时间获取新机会")
+        st.subheader(t("company_monitor_title"))
+        st.write(t("company_monitor_desc"))
 
-        st.subheader("📈 成本控制")
-        st.write("精确计量 API 调用成本，支持设置月度预算上限")
+        st.subheader(t("cost_control_title"))
+        st.write(t("cost_control_desc"))
 
-        st.subheader("📧 通知推送")
-        st.write("高分职位自动推送，不错过任何好机会")
+        st.subheader(t("notification_push_title"))
+        st.write(t("notification_push_desc"))
 
     # 系统信息
     st.divider()
-    st.header("ℹ️ 系统信息")
+    st.header(t("system_info_title"))
 
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.write("**版本**: v1.0")
-        st.write("**技术栈**: Python + Streamlit + SQLite")
+        st.write(f"**{t('version_label')}**: v1.0")
+        st.write(f"**{t('tech_stack_label')}**: Python + Streamlit + SQLite")
 
     with col2:
-        st.write("**模型**: GLM-5.3-Flash")
-        st.write("**数据源**: Greenhouse / Lever API")
+        st.write(f"**{t('model_label')}**: GLM-5.3-Flash")
+        st.write(f"**{t('data_source_label')}**: Greenhouse / Lever API")
 
     with col3:
-        st.write("**开源协议**: MIT")
+        st.write(f"**{t('license_label')}**: MIT")
         st.write("**GitHub**: offer-radar")
