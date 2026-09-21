@@ -3,7 +3,7 @@
 [![CI](https://github.com/zhushenan-jpg/offer-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/zhushenan-jpg/offer-radar/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
-![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-192%20passing-brightgreen)
 
 > OfferRadar · 求职机会雷达 | English: [README.en.md](README.en.md)
 
@@ -63,7 +63,7 @@ docker compose up -d
 
 1. 生成并提交演示库:`python scripts/export_demo_db.py`(输出 `deploy/demo_jobpilot.db`);
 2. 仓库推送到 GitHub;
-3. [share.streamlit.io](https://share.streamlit.io) → New app → 选仓库,Main file 填 `src/jobpilot/app/dashboard.py`。
+3. [share.streamlit.io](https://share.streamlit.io) → New app → 选仓库,Main file 填 `src/jobpilot/app/app.py`。
 
 ## 扩展技能 (M5-M7)
 
@@ -131,9 +131,11 @@ brief = prep.generate_brief(
 
 ### 监控面板
 
+所有功能通过统一入口 `app.py` 启动，监控面板是其中一个页面：
+
 ```bash
-# 启动监控面板
-streamlit run src/jobpilot/app/monitoring.py
+streamlit run src/jobpilot/app/app.py
+# 侧边栏选择「📈 监控面板」
 ```
 
 ### 邮件告警配置
@@ -157,6 +159,26 @@ ALERT_RECIPIENTS=recipient@example.com
 - [x] M5:Claim Evidence Extractor - 证据链提取器
 - [x] M6:Gap Advisor - 简历差距顾问
 - [x] M7:Interview Prep Generator - 面试预测器
+
+### v1.1 优化（2026-09-21）
+
+- [x] 语言切换修复（路由语言无关化，60+ 硬编码迁移至 i18n）
+- [x] API Key 保存前有效性校验
+- [x] 评测标注页面（可视化 50 条标注，进度追踪）
+- [x] 错误提示优化（区分超时/认证/网络错误）
+- [x] 采集进度条（逐公司实时进度）
+- [x] 公司调研工具（DuckDuckGo + LLM）
+- [x] Parser Agent（LLM 结构化 JD 解析，4 Agent 编排）
+- [x] 人工审核队列 UI
+- [x] CSV 数据导出
+- [x] 成本基准测试脚本
+
+### v2.0 功能增强（2026-09-21）
+
+- [x] AI 简历优化（Gap Advisor 集成）
+- [x] 面试模拟（交互式 AI 问答）
+- [x] 职位推荐（高分公司优先）
+- [x] 薪资分析（JD 提取 + 公司分组）
 
 ## 周报示例
 

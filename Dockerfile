@@ -38,7 +38,7 @@ EXPOSE 8501
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD python -c "print('OK')" || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8501/_stcore/health')" || exit 1
 
 # 默认启动命令: 启动 Streamlit 面板
-CMD ["python", "-m", "streamlit", "run", "src/jobpilot/app/dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"]
+CMD ["python", "-m", "streamlit", "run", "src/jobpilot/app/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
